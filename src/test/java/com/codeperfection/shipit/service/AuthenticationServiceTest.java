@@ -1,6 +1,7 @@
 package com.codeperfection.shipit.service;
 
 import com.codeperfection.shipit.dto.JwtResponseDto;
+import com.codeperfection.shipit.dto.UserDto;
 import com.codeperfection.shipit.entity.RoleName;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EmailAlreadyTakenException;
@@ -62,7 +63,9 @@ public class AuthenticationServiceTest {
         doThrow(mock(AuthenticationException.class)).when(authenticationManager).authenticate(authentication);
         assertThatExceptionOfType(AuthenticationException.class).isThrownBy(() ->
                 authenticationService.generateJwtToken(signInDto));
-        verify(tokenProvider, never()).generateToken(any());
+
+        verifyNoMoreInteractions(authenticationManager, userRepository, roleRepository,
+                tokenProvider, passwordEncoder, modelMapper);
     }
 
     @Test
@@ -88,6 +91,9 @@ public class AuthenticationServiceTest {
         final var jwtResponseDto = authenticationService.generateJwtToken(signInDto);
 
         assertThat(jwtResponseDto).isEqualTo(new JwtResponseDto(token, subject, expirationInSeconds));
+
+        verifyNoMoreInteractions(authenticationManager, userRepository, roleRepository,
+                tokenProvider, passwordEncoder, modelMapper);
     }
 
     @Test
@@ -96,7 +102,9 @@ public class AuthenticationServiceTest {
         doReturn(true).when(userRepository).existsByUsername(signUpDto.getUsername());
         assertThatExceptionOfType(UsernameAlreadyTakenException.class).isThrownBy(() ->
                 authenticationService.signUpUser(signUpDto));
-        verifyNoMoreInteractions(userRepository, roleRepository);
+
+        verifyNoMoreInteractions(authenticationManager, userRepository, roleRepository,
+                tokenProvider, passwordEncoder, modelMapper);
     }
 
     @Test
@@ -106,7 +114,9 @@ public class AuthenticationServiceTest {
         doReturn(true).when(userRepository).existsByEmail(signUpDto.getEmail());
         assertThatExceptionOfType(EmailAlreadyTakenException.class).isThrownBy(() ->
                 authenticationService.signUpUser(signUpDto));
-        verifyNoMoreInteractions(userRepository, roleRepository);
+
+        verifyNoMoreInteractions(authenticationManager, userRepository, roleRepository,
+                tokenProvider, passwordEncoder, modelMapper);
     }
 
     @Test
@@ -115,6 +125,8 @@ public class AuthenticationServiceTest {
         doReturn(Optional.of(role)).when(roleRepository).findByName(RoleName.ROLE_USER);
         String encodedPassword = "encodedPassword";
         final var signUpDto = AuthenticationFixtureFactory.createSignUpDto();
+        doReturn(false).when(userRepository).existsByUsername(signUpDto.getUsername());
+        doReturn(false).when(userRepository).existsByEmail(signUpDto.getEmail());
         doReturn(encodedPassword).when(passwordEncoder).encode(signUpDto.getPassword());
 
         final var userDto = authenticationService.signUpUser(signUpDto);
@@ -132,5 +144,9 @@ public class AuthenticationServiceTest {
         assertThat(savedUser.getPasswordChangeDate()).isCloseToUtcNow(epsilon);
         assertThat(savedUser.getCreatedAt()).isCloseToUtcNow(epsilon);
         assertThat(savedUser.getUpdatedAt()).isCloseToUtcNow(epsilon);
+
+        verify(modelMapper).map(savedUser, UserDto.class);
+        verifyNoMoreInteractions(authenticationManager, userRepository, roleRepository,
+                tokenProvider, passwordEncoder, modelMapper);
     }
 }

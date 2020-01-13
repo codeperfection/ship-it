@@ -4,8 +4,7 @@ import com.codeperfection.shipit.exception.ApiError;
 import com.codeperfection.shipit.exception.ErrorType;
 import com.codeperfection.shipit.exception.InternalServerErrorException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -19,10 +18,9 @@ import java.time.ZoneOffset;
 
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
+@Slf4j
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private ObjectMapper objectMapper;
 
@@ -36,8 +34,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         handleAuthenticationException(exception, httpServletResponse);
     }
 
+    /**
+     * Handler for non-AuthenticationException types, which occurred in the process of authentication.
+     */
     public void handleAuthenticationException(Exception exception, HttpServletResponse response) {
-        logger.error(exception.getMessage(), exception.getCause());
+        log.error(exception.getMessage(), exception.getCause());
         try {
             response.setContentType(MediaType.APPLICATION_JSON.getType());
             response.setStatus(SC_UNAUTHORIZED);

@@ -1,6 +1,6 @@
 package com.codeperfection.shipit.security;
 
-import com.codeperfection.shipit.exception.authorization.InvalidJwtTokenException;
+import com.codeperfection.shipit.exception.authorization.JwtTokenInvalidatedException;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,13 +56,13 @@ public class JwtAuthenticationFilterTest {
     public void doFilterInternalIfNoJwtInRequestContinuesChain() throws IOException, ServletException {
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        verify(filterChain).doFilter(request, response);
-        verify(jwtAuthenticationEntryPoint, never()).handleAuthenticationException(any(), any());
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        verify(filterChain).doFilter(request, response);
+        verifyNoMoreInteractions(userDetailsService, jwtTokenProvider, jwtAuthenticationEntryPoint);
     }
 
     @Test
-    public void doFilterInternalIfTokenIssuedAfterPasswordResetThrowsException() throws IOException, ServletException {
+    public void doFilterInternalIfTokenIssuedAfterPasswordResetExceptionHandled() throws IOException, ServletException {
         final var authenticatedUser = mockAuthenticatedUser();
         var tokenClaims = mock(Claims.class);
         mockTokenClaims(tokenClaims, authenticatedUser);
@@ -71,9 +71,11 @@ public class JwtAuthenticationFilterTest {
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        verify(jwtAuthenticationEntryPoint).handleAuthenticationException(any(InvalidJwtTokenException.class), any());
-        verify(filterChain, never()).doFilter(request, response);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+
+        verify(jwtAuthenticationEntryPoint).handleAuthenticationException(
+                any(JwtTokenInvalidatedException.class), any());
+        verifyNoMoreInteractions(userDetailsService, jwtTokenProvider, jwtAuthenticationEntryPoint);
     }
 
     @Test
@@ -86,11 +88,12 @@ public class JwtAuthenticationFilterTest {
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        verify(jwtAuthenticationEntryPoint, never()).handleAuthenticationException(any(), any());
-        verify(filterChain).doFilter(request, response);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isEqualTo(
                 new UsernamePasswordAuthenticationToken(authenticatedUser, null,
                         authenticatedUser.getAuthorities()));
+
+        verify(filterChain).doFilter(request, response);
+        verifyNoMoreInteractions(userDetailsService, jwtTokenProvider, jwtAuthenticationEntryPoint);
     }
 
     private void mockTokenClaims(Claims tokenClaims, AuthenticatedUser authenticatedUser) {

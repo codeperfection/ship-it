@@ -2,6 +2,7 @@ package com.codeperfection.shipit.security;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,23 +14,17 @@ import java.util.UUID;
 @EqualsAndHashCode(of = "uuid")
 public class AuthenticatedUser implements UserDetails {
 
-    private UUID uuid;
-
     private String username;
 
     private String password;
 
+    @Getter
+    private UUID uuid;
+
+    @Getter
     private OffsetDateTime passwordChangeDate;
 
     private Collection<? extends GrantedAuthority> authorities;
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public OffsetDateTime getPasswordChangeDate() {
-        return passwordChangeDate;
-    }
 
     @Override
     public String getUsername() {

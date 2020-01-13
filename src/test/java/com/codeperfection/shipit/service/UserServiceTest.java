@@ -1,5 +1,6 @@
 package com.codeperfection.shipit.service;
 
+import com.codeperfection.shipit.dto.UserDto;
 import com.codeperfection.shipit.exception.authorization.UserNotFoundException;
 import com.codeperfection.shipit.repository.UserRepository;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -35,6 +36,7 @@ public class UserServiceTest {
         doReturn(Optional.empty()).when(userRepository).findById(authenticatedUser.getUuid());
         assertThatExceptionOfType(UserNotFoundException.class).isThrownBy(() ->
                 userService.getCurrentUser(authenticatedUser));
+        verifyNoMoreInteractions(userRepository, modelMapper);
     }
 
     @Test
@@ -45,5 +47,8 @@ public class UserServiceTest {
 
         final var userDto = userService.getCurrentUser(authenticatedUser);
         assertThat(userDto).isEqualToComparingFieldByField(user);
+
+        verify(modelMapper).map(user, UserDto.class);
+        verifyNoMoreInteractions(userRepository, modelMapper);
     }
 }

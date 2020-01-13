@@ -1,6 +1,6 @@
 package com.codeperfection.shipit.security;
 
-import com.codeperfection.shipit.exception.authorization.InvalidJwtTokenException;
+import com.codeperfection.shipit.exception.authorization.JwtTokenInvalidatedException;
 import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,17 +38,17 @@ class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws IOException, ServletException {
         String jwtToken = getJwtFromRequest(request);
         if (jwtToken == null) {
+            // There are endpoints in the service which don't require authentication
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
             SecurityContextHolder.getContext().setAuthentication(getAuthentication(jwtToken));
+            filterChain.doFilter(request, response);
         } catch (Exception exception) {
             jwtAuthenticationEntryPoint.handleAuthenticationException(exception, response);
-            return;
         }
-        filterChain.doFilter(request, response);
     }
 
     private UsernamePasswordAuthenticationToken getAuthentication(String token) {
@@ -56,7 +56,7 @@ class JwtAuthenticationFilter extends OncePerRequestFilter {
         UUID userUuid = UUID.fromString(claims.getSubject());
         AuthenticatedUser user = userDetailsService.loadUserByUuid(userUuid);
         if (user.getPasswordChangeDate().isAfter(claims.getIssuedAt().toInstant().atOffset(ZoneOffset.UTC))) {
-            throw new InvalidJwtTokenException(token);
+            throw new JwtTokenInvalidatedException(token);
         }
 
         return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());

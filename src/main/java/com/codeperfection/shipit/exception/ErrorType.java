@@ -1,9 +1,20 @@
 package com.codeperfection.shipit.exception;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
+
 public enum ErrorType {
-    EMAIL_ALREADY_TAKEN,
-    USERNAME_ALREADY_TAKEN,
-    UNAUTHORIZED,
-    INVALID_PAYLOAD,
-    INTERNAL_SERVER_ERROR
+    EMAIL_ALREADY_TAKEN("email_already_taken"),
+    USERNAME_ALREADY_TAKEN("username_already_taken"),
+    UNAUTHORIZED("unauthorized"),
+    INVALID_PAYLOAD("invalid_payload"),
+    INTERNAL_SERVER_ERROR("internal_server_error");
+
+    @JsonValue
+    @Getter
+    private final String displayName;
+
+    ErrorType(String displayName) {
+        this.displayName = displayName;
+    }
 }
