@@ -41,7 +41,7 @@ public class JwtAuthenticationEntryPointTest {
         final var epsilon = within(10, ChronoUnit.SECONDS);
         assertThat(OffsetDateTime.parse(json.get("timestamp").asText())).isCloseToUtcNow(epsilon);
         assertThat(json.get("status").asInt()).isEqualTo(SC_UNAUTHORIZED);
-        assertThat(json.get("error").asText()).isEqualTo(ErrorType.UNAUTHORIZED.getDisplayName());
+        assertThat(json.get("errorType").asText()).isEqualTo(ErrorType.UNAUTHORIZED.getDisplayName());
         assertThat(json.get("message").asText()).isEqualTo(exception.getMessage());
     }
 

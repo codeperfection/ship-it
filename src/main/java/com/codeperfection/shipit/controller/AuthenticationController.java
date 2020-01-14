@@ -29,7 +29,7 @@ public class AuthenticationController {
     }
 
     @PostMapping(RequestValues.SIGN_UP)
-    public ResponseEntity<?> signUp(@Valid @RequestBody SignUpDto signUpDto) {
+    public ResponseEntity<UserDto> signUp(@Valid @RequestBody SignUpDto signUpDto) {
         UserDto userDto = authenticationService.signUpUser(signUpDto);
         return ResponseEntity.ok(userDto);
     }

@@ -9,11 +9,11 @@ public abstract class ClientErrorException extends RuntimeException {
 
     private int status;
 
-    private ErrorType error;
+    private ErrorType errorType;
 
-    public ClientErrorException(String message, HttpStatus httpStatus, ErrorType error) {
+    public ClientErrorException(String message, HttpStatus httpStatus, ErrorType errorType) {
         super(message);
         this.status = httpStatus.value();
-        this.error = error;
+        this.errorType = errorType;
     }
 }
