@@ -46,4 +46,10 @@ public class User {
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_uuid"),
             inverseJoinColumns = @JoinColumn(name = "role_uuid"))
     private Set<Role> roles;
+
+    public static User withUuid(UUID uuid) {
+        final var user = new User();
+        user.setUuid(uuid);
+        return user;
+    }
 }

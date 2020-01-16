@@ -12,7 +12,11 @@ public final class RequestValues {
 
     public static final String SIGN_UP = "/sign-up";
 
+    public static final String UUID_PARAM = "/{uuid}";
+
     public static final String USERS = "/users";
 
     public static final String ME = "/me";
+
+    public static final String TRANSPORTERS = "/transporters";
 }

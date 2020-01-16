@@ -58,6 +58,7 @@ CREATE TABLE product
 
 CREATE INDEX product_user_uuid ON product (user_uuid);
 CREATE INDEX product_is_active ON product (is_active);
+CREATE INDEX product_created_at ON product (created_at);
 
 CREATE TABLE stock_item
 (
@@ -69,7 +70,8 @@ CREATE TABLE stock_item
 
   PRIMARY KEY (uuid),
   FOREIGN KEY (user_uuid) REFERENCES auth_user (uuid),
-  FOREIGN KEY (product_uuid) REFERENCES product (uuid)
+  FOREIGN KEY (product_uuid) REFERENCES product (uuid),
+  UNIQUE (user_uuid, product_uuid)
 );
 
 CREATE INDEX stock_item_user_uuid ON stock_item (user_uuid);
@@ -92,6 +94,7 @@ CREATE TABLE transporter
 
 CREATE INDEX transporter_user_uuid ON transporter (user_uuid);
 CREATE INDEX transporter_is_active ON transporter (is_active);
+CREATE INDEX transporter_created_at ON transporter (created_at);
 
 CREATE TABLE shipping
 (
@@ -123,7 +126,8 @@ CREATE TABLE shipped_item
 
     PRIMARY KEY (uuid),
     FOREIGN KEY (shipping_uuid) REFERENCES shipping (uuid),
-    FOREIGN KEY (product_uuid) REFERENCES product (uuid)
+    FOREIGN KEY (product_uuid) REFERENCES product (uuid),
+    UNIQUE (shipping_uuid, product_uuid)
 );
 
 CREATE INDEX shipped_item_shipping_uuid ON shipped_item (shipping_uuid);

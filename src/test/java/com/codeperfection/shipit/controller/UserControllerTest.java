@@ -1,6 +1,5 @@
 package com.codeperfection.shipit.controller;
 
-import com.codeperfection.shipit.exception.ErrorType;
 import com.codeperfection.shipit.service.UserService;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import org.junit.jupiter.api.Test;
@@ -9,10 +8,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import static com.codeperfection.shipit.controller.RequestValues.*;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class UserControllerTest extends ControllerTestBase {
 
@@ -21,10 +20,7 @@ public class UserControllerTest extends ControllerTestBase {
 
     @Test
     public void getCurrentUserIfNotAuthenticatedReturnsError() throws Exception {
-        mockMvc.perform(get(API_V1 + USERS + ME)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.UNAUTHORIZED.getDisplayName())));
+        checkUnauthorizedResponse(get(API_V1 + USERS + ME));
     }
 
     @Test

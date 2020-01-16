@@ -8,7 +8,8 @@ public enum ErrorType {
     USERNAME_ALREADY_TAKEN("username_already_taken"),
     UNAUTHORIZED("unauthorized"),
     INVALID_PAYLOAD("invalid_payload"),
-    INTERNAL_SERVER_ERROR("internal_server_error");
+    INTERNAL_SERVER_ERROR("internal_server_error"),
+    NOT_FOUND("not_found");
 
     @JsonValue
     @Getter

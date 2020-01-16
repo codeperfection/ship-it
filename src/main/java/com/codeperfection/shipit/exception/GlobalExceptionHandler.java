@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,6 +39,15 @@ public class GlobalExceptionHandler {
                         e.getBindingResult().getFieldErrors().stream().map(error ->
                                 new ApiFieldError.FieldErrorInfo(error.getField(), error.getDefaultMessage()))
                                 .collect(Collectors.toList())));
+    }
+
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity<ApiError> bindException(BindException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(
+                ApiFieldError.badRequest("Field validation failed", e.getBindingResult().getFieldErrors()
+                        .stream().map(error -> new ApiFieldError.FieldErrorInfo(error.getField(),
+                                error.getDefaultMessage())).collect(Collectors.toList())));
     }
 
     @ExceptionHandler(InternalServerErrorException.class)
