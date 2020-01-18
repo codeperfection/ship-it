@@ -19,4 +19,6 @@ public final class RequestValues {
     public static final String ME = "/me";
 
     public static final String TRANSPORTERS = "/transporters";
+
+    public static final String PRODUCTS = "/products";
 }

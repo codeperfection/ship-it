@@ -46,6 +46,8 @@ CREATE TABLE product
 
     name text NOT NULL,
     volume INTEGER NOT NULL,
+    price INTEGER NOT NULL,
+    count_in_stock INTEGER NOT NULL,
 
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     is_active BOOLEAN NOT NULL,
@@ -59,22 +61,6 @@ CREATE TABLE product
 CREATE INDEX product_user_uuid ON product (user_uuid);
 CREATE INDEX product_is_active ON product (is_active);
 CREATE INDEX product_created_at ON product (created_at);
-
-CREATE TABLE stock_item
-(
-  uuid UUID,
-
-  user_uuid UUID NOT NULL,
-  product_uuid UUID NOT NULL,
-  count INTEGER NOT NULL,
-
-  PRIMARY KEY (uuid),
-  FOREIGN KEY (user_uuid) REFERENCES auth_user (uuid),
-  FOREIGN KEY (product_uuid) REFERENCES product (uuid),
-  UNIQUE (user_uuid, product_uuid)
-);
-
-CREATE INDEX stock_item_user_uuid ON stock_item (user_uuid);
 
 CREATE TABLE transporter
 (

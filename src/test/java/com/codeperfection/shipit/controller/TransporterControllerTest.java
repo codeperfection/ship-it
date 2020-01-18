@@ -5,6 +5,7 @@ import com.codeperfection.shipit.dto.TransporterDto;
 import com.codeperfection.shipit.exception.ErrorType;
 import com.codeperfection.shipit.service.TransporterService;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
+import com.codeperfection.shipit.util.CommonFixtureFactory;
 import com.codeperfection.shipit.util.ShippingFixtureFactory;
 import com.codeperfection.shipit.util.TestUtil;
 import org.junit.jupiter.api.Test;
@@ -36,8 +37,7 @@ public class TransporterControllerTest extends ControllerTestBase {
     @Test
     public void createTransporterIfInvalidPayloadReturnsError() throws Exception {
         mockAuthentication();
-        final var transporterDto = new TransporterDto(UUID.fromString("29ffb750-5cfb-441d-8fa4-6b5f25e4c959"),
-                "", -1);
+        final var transporterDto = new TransporterDto(null, "", -1);
         mockMvc.perform(post(API_V1 + TRANSPORTERS)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(transporterDto))
@@ -89,9 +89,9 @@ public class TransporterControllerTest extends ControllerTestBase {
     @Test
     public void getTransportersIfValidPaginationReturnsPageDto() throws Exception {
         mockAuthentication();
-        final var paginationFilterDto = ShippingFixtureFactory.createPaginationFilterDto();
+        final var paginationFilterDto = CommonFixtureFactory.createPaginationFilterDto();
         final var transporterDto = ShippingFixtureFactory.createTransporterDto();
-        final var pageDto = ShippingFixtureFactory.createPageDto(transporterDto);
+        final var pageDto = CommonFixtureFactory.createPageDto(transporterDto);
         doReturn(pageDto).when(transporterService).getTransporters(paginationFilterDto, authenticatedUser);
         mockMvc.perform(get(API_V1 + TRANSPORTERS)
                 .contentType(MediaType.APPLICATION_JSON)

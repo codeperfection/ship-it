@@ -1,12 +1,9 @@
 package com.codeperfection.shipit.util;
 
-import com.codeperfection.shipit.dto.PageDto;
-import com.codeperfection.shipit.dto.PaginationFilterDto;
 import com.codeperfection.shipit.dto.TransporterDto;
 import com.codeperfection.shipit.entity.Transporter;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 public class ShippingFixtureFactory {
@@ -26,13 +23,5 @@ public class ShippingFixtureFactory {
 
     public static TransporterDto createTransporterDto() {
         return new TransporterDto(TRANSPORTER_UUID, TRANSPORTER_NAME, CAPACITY);
-    }
-
-    public static PaginationFilterDto createPaginationFilterDto() {
-        return new PaginationFilterDto(0, 1);
-    }
-
-    public static <T> PageDto<T> createPageDto(T item) {
-        return new PageDto<>(1, 1, List.of(item));
     }
 }
