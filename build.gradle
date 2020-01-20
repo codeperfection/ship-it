@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.codeperfection.shipit'
-version = '0.0.1-SNAPSHOT'
+version = '1.0'
 sourceCompatibility = '11'
 
 repositories {
@@ -24,8 +24,8 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     runtime("org.postgresql:postgresql")
 
-    compileOnly("org.projectlombok:lombok:1.18.10")
-    annotationProcessor("org.projectlombok:lombok:1.18.10")
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
 
     testImplementation("org.mockito:mockito-junit-jupiter")
     testImplementation("org.hsqldb:hsqldb")

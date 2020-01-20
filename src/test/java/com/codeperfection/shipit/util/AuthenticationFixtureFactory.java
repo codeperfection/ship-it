@@ -1,9 +1,6 @@
 package com.codeperfection.shipit.util;
 
-import com.codeperfection.shipit.dto.JwtResponseDto;
-import com.codeperfection.shipit.dto.SignInDto;
-import com.codeperfection.shipit.dto.SignUpDto;
-import com.codeperfection.shipit.dto.UserDto;
+import com.codeperfection.shipit.dto.*;
 import com.codeperfection.shipit.entity.Role;
 import com.codeperfection.shipit.entity.RoleName;
 import com.codeperfection.shipit.entity.User;
@@ -71,5 +68,9 @@ public class AuthenticationFixtureFactory {
 
     public static JwtResponseDto createJwtResponseDto() {
         return new JwtResponseDto("accessToken", USER_UUID.toString(), 10L);
+    }
+
+    public static ChangePasswordDto createChangePasswordDto() {
+        return new ChangePasswordDto(PASSWORD, "newPassword");
     }
 }
