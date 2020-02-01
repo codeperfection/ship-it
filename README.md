@@ -67,6 +67,11 @@ This jar file can run with java 11 or higher
 ```shell script
 java -jar build/libs/ship-it-<version>.jar
 ```
+It's also possible to import the project into an IDE and run the main application
+`com.codeperfection.shipit.ShipItApplication`
+
+For that you need to have a [Lombok](https://projectlombok.org) plugin installed on your IDE. For IntelliJ IDEA you can
+install it from [here](https://plugins.jetbrains.com/plugin/6317-lombok) and enable annotation processing. 
 
 ## License
 

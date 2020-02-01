@@ -1,0 +1,61 @@
+package com.codeperfection.shipit.service;
+
+import com.codeperfection.shipit.dto.CreateShippingDto;
+import com.codeperfection.shipit.dto.ShippingDto;
+import com.codeperfection.shipit.entity.Product;
+import com.codeperfection.shipit.entity.User;
+import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
+import com.codeperfection.shipit.exception.clienterror.ShippingImpossibleException;
+import com.codeperfection.shipit.placer.Item;
+import com.codeperfection.shipit.placer.KnapsackPlacer;
+import com.codeperfection.shipit.repository.ProductRepository;
+import com.codeperfection.shipit.repository.TransporterRepository;
+import com.codeperfection.shipit.security.AuthenticatedUser;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+@Service
+public class ShippingService {
+
+    private ShippingHelperComponent shippingHelperComponent;
+
+    private TransporterRepository transporterRepository;
+
+    private ProductRepository productRepository;
+
+    private KnapsackPlacer knapsackPlacer;
+
+    public ShippingService(ShippingHelperComponent shippingHelperComponent, TransporterRepository transporterRepository,
+                           ProductRepository productRepository, KnapsackPlacer knapsackPlacer) {
+        this.shippingHelperComponent = shippingHelperComponent;
+        this.transporterRepository = transporterRepository;
+        this.productRepository = productRepository;
+        this.knapsackPlacer = knapsackPlacer;
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public ShippingDto createShipping(CreateShippingDto createShippingDto, AuthenticatedUser authenticatedUser) {
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        final var transporter = transporterRepository.findByUuidAndUser(createShippingDto.getTransporterUuid(), user)
+                .orElseThrow(() -> new EntityNotFoundException(createShippingDto.getTransporterUuid()));
+        final var items = shippingHelperComponent.convertToItems(productRepository.findByUserAndIsActiveTrue(user));
+
+        final var productToCount = knapsackPlacer.place(items, transporter.getCapacity()).getItems().stream()
+                .collect(Collectors.groupingBy(Item::getProduct,
+                        () -> new TreeMap<>(Comparator.comparing(Product::getUuid)), Collectors.counting()));
+        if (productToCount.isEmpty()) {
+            throw new ShippingImpossibleException();
+        }
+
+        shippingHelperComponent.deductPlacedProductsFromStock(productToCount);
+        final var shippedItems = shippingHelperComponent.createShippedItems(productToCount);
+        final var shipping = shippingHelperComponent.saveShipping(createShippingDto, transporter, user, shippedItems);
+        return shippingHelperComponent.mapToDto(shipping);
+    }
+}

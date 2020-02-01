@@ -23,4 +23,6 @@ public final class RequestValues {
     public static final String TRANSPORTERS = "/transporters";
 
     public static final String PRODUCTS = "/products";
+
+    public static final String SHIPPINGS = "/shippings";
 }

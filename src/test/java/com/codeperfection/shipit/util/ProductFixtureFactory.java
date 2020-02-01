@@ -2,8 +2,11 @@ package com.codeperfection.shipit.util;
 
 import com.codeperfection.shipit.dto.ProductDto;
 import com.codeperfection.shipit.entity.Product;
+import com.codeperfection.shipit.placer.Item;
+import com.codeperfection.shipit.placer.Knapsack;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class ProductFixtureFactory {
@@ -27,5 +30,16 @@ public class ProductFixtureFactory {
 
     public static ProductDto createProductDto() {
         return new ProductDto(PRODUCT_UUID, PRODUCT_NAME, VOLUME, PRICE, COUNT_IN_STOCK);
+    }
+
+    public static Item[] createKnapsackItems() {
+        return new Item[]{new Item(createProduct(), VOLUME, PRICE)};
+    }
+
+    public static Knapsack crateKnapsack() {
+        final var product = createProduct();
+        final var item1 = new Item(product, VOLUME, PRICE);
+        final var item2 = new Item(product, VOLUME, PRICE);
+        return new Knapsack(50, PRICE * 2, List.of(item1, item2));
     }
 }

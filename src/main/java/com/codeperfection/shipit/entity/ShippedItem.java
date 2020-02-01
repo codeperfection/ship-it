@@ -1,5 +1,7 @@
 package com.codeperfection.shipit.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +12,8 @@ import java.util.UUID;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ShippedItem {
 
     @Id
@@ -22,4 +26,9 @@ public class ShippedItem {
 
     @NotNull
     private Integer count;
+
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "shipping_uuid")
+    private Shipping shipping;
 }

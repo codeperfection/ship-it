@@ -1,0 +1,103 @@
+package com.codeperfection.shipit.service;
+
+import com.codeperfection.shipit.entity.Shipping;
+import com.codeperfection.shipit.placer.Item;
+import com.codeperfection.shipit.repository.ProductRepository;
+import com.codeperfection.shipit.repository.ShippingRepository;
+import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
+import com.codeperfection.shipit.util.ProductFixtureFactory;
+import com.codeperfection.shipit.util.ShippingFixtureFactory;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class ShippingHelperComponentTest {
+
+    @Mock
+    private ProductRepository productRepository;
+
+    @Mock
+    private ShippingRepository shippingRepository;
+
+    @Spy
+    private ModelMapper modelMapper;
+
+    @InjectMocks
+    private ShippingHelperComponent shippingHelperComponent;
+
+    @Test
+    public void convertToItemsReturnsItemsArray() {
+        final var product = ProductFixtureFactory.createProduct();
+        final var expectedItem = new Item(product, product.getVolume(), product.getPrice());
+        final var items = shippingHelperComponent.convertToItems(List.of(product));
+        assertThat(items).containsExactlyElementsOf(Collections.nCopies(product.getCountInStock(), expectedItem));
+    }
+
+    @Test
+    public void deductPlacedProductsFromStockDeductsCounts() {
+        final var product = ProductFixtureFactory.createProduct();
+        final var placedProduct = ProductFixtureFactory.createProduct();
+        int count = 2;
+        placedProduct.setCountInStock(placedProduct.getCountInStock() - count);
+        doReturn(placedProduct).when(productRepository).save(placedProduct);
+        shippingHelperComponent.deductPlacedProductsFromStock(Map.of(product, (long) count));
+
+        assertThat(product).isEqualTo(placedProduct);
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    public void saveShippingPersistsInDb() {
+        final var shipping = ShippingFixtureFactory.createShipping();
+        doReturn(shipping).when(shippingRepository).save(any());
+
+        final var shippedItems = ShippingFixtureFactory.createShippedItems();
+        final var returnedShipping = shippingHelperComponent.saveShipping(ShippingFixtureFactory.createCreateShippingDto(),
+                ShippingFixtureFactory.createTransporter(), AuthenticationFixtureFactory.createUser(), shippedItems);
+        assertThat(returnedShipping).isEqualTo(shipping);
+
+        final var shippingArgumentCaptor = ArgumentCaptor.forClass(Shipping.class);
+        verify(shippingRepository).save(shippingArgumentCaptor.capture());
+        final var savedShipping = shippingArgumentCaptor.getValue();
+        assertThat(savedShipping).isEqualToIgnoringGivenFields(shipping,
+                "uuid", "createdAt", "shippedItems");
+        final var epsilon = within(10, ChronoUnit.SECONDS);
+        assertThat(savedShipping.getCreatedAt()).isCloseToUtcNow(epsilon);
+        shippedItems.forEach(shippedItem -> assertThat(shippedItem.getShipping()).isEqualTo(savedShipping));
+        assertThat(savedShipping.getShippedItems()).usingElementComparatorIgnoringFields("shipping")
+                .containsExactlyElementsOf(shippedItems);
+        verifyNoMoreInteractions(shippingRepository);
+    }
+
+    @Test
+    public void createShippedItemsReturnsShippedItems() {
+        final var product = ProductFixtureFactory.createProduct();
+        int count = 2;
+        final var shippedItems = shippingHelperComponent.createShippedItems(Map.of(product, (long) count));
+
+        assertThat(shippedItems).usingElementComparatorIgnoringFields("uuid")
+                .containsExactlyElementsOf(ShippingFixtureFactory.createShippedItems());
+    }
+
+    @Test
+    public void mapToDtoReturnsDto() {
+        assertThat(shippingHelperComponent.mapToDto(ShippingFixtureFactory.createShipping()))
+                .isEqualTo(ShippingFixtureFactory.createShippingDto());
+    }
+}

@@ -1,20 +1,22 @@
 package com.codeperfection.shipit.entity;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString(exclude = "shippedItems")
+@EqualsAndHashCode(exclude = "shippedItems")
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Shipping {
 
     @Id
@@ -30,4 +32,18 @@ public class Shipping {
     @Convert(converter = ZoneIdConverter.class)
     @NotNull
     private ZoneId createdAtZoneId;
+
+    @NotNull
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "transporter_uuid")
+    private Transporter transporter;
+
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "user_uuid")
+    private User user;
+
+    @NotNull
+    @OneToMany(mappedBy = "shipping", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<ShippedItem> shippedItems;
 }
