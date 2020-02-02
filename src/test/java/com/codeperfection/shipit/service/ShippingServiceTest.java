@@ -1,11 +1,14 @@
 package com.codeperfection.shipit.service;
 
+import com.codeperfection.shipit.dto.PageDto;
+import com.codeperfection.shipit.dto.PaginationFilterDto;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.exception.clienterror.ShippingImpossibleException;
 import com.codeperfection.shipit.placer.Knapsack;
 import com.codeperfection.shipit.placer.KnapsackPlacer;
 import com.codeperfection.shipit.repository.ProductRepository;
+import com.codeperfection.shipit.repository.ShippingRepository;
 import com.codeperfection.shipit.repository.TransporterRepository;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.ProductFixtureFactory;
@@ -15,11 +18,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -36,6 +39,9 @@ public class ShippingServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private ShippingRepository shippingRepository;
 
     @Mock
     private KnapsackPlacer knapsackPlacer;
@@ -103,5 +109,50 @@ public class ShippingServiceTest {
         assertThat(shippingService.createShipping(createShippingDto, authenticatedUser)).isEqualTo(shippingDto);
 
         verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, knapsackPlacer);
+    }
+
+    @Test
+    public void getShippingsReturnsPaginatedDtos() {
+        final var paginationFilterDto = new PaginationFilterDto(2, 1);
+        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
+        final var shipping = ShippingFixtureFactory.createShipping();
+        final var databasePage = new PageImpl<>(List.of(shipping));
+        doReturn(databasePage).when(shippingRepository).findByUser(User.withUuid(authenticatedUser.getUuid()),
+                PageRequest.of(paginationFilterDto.getPage(), paginationFilterDto.getSize(), Sort.by("createdAt")));
+        final var shippingDto = ShippingFixtureFactory.createShippingDto();
+        doReturn(shippingDto).when(shippingHelperComponent).mapToDto(shipping);
+
+        final var shippingsPage = shippingService.getShippings(paginationFilterDto, authenticatedUser);
+
+        assertThat(shippingsPage).isEqualTo(new PageDto<>(databasePage.getTotalElements(),
+                databasePage.getTotalPages(), List.of(shippingDto)));
+        verifyNoMoreInteractions(shippingRepository, shippingHelperComponent);
+    }
+
+    @Test
+    public void getShippingIfNotFoundThrowsException() {
+        final var nonExistingUuid = UUID.fromString("613d59d8-2e4a-451a-ac4c-4fc0ac430558");
+        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
+        doReturn(Optional.empty()).when(shippingRepository).findByUuidAndUser(nonExistingUuid,
+                User.withUuid(authenticatedUser.getUuid()));
+
+        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() ->
+                shippingService.getShipping(nonExistingUuid, authenticatedUser));
+        verifyNoMoreInteractions(shippingRepository, shippingHelperComponent);
+    }
+
+    @Test
+    public void getShippingIfFoundReturnsDto() {
+        final var shipping = ShippingFixtureFactory.createShipping();
+        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
+        doReturn(Optional.of(shipping)).when(shippingRepository).findByUuidAndUser(shipping.getUuid(),
+                User.withUuid(authenticatedUser.getUuid()));
+        final var expectedShippingDto = ShippingFixtureFactory.createShippingDto();
+        doReturn(expectedShippingDto).when(shippingHelperComponent).mapToDto(shipping);
+
+        final var shippingDto = shippingService.getShipping(shipping.getUuid(), authenticatedUser);
+
+        assertThat(shippingDto).isEqualTo(expectedShippingDto);
+        verifyNoMoreInteractions(shippingRepository, shippingHelperComponent);
     }
 }

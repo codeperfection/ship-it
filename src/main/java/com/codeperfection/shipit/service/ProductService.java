@@ -58,7 +58,7 @@ public class ProductService {
     @PreAuthorize("hasRole('USER')")
     public ProductDto getProduct(UUID uuid, AuthenticatedUser authenticatedUser) {
         final var product = productRepository.findByUuidAndUser(uuid, User.withUuid(authenticatedUser.getUuid()))
-                .orElseThrow(() -> new EntityNotFoundException(authenticatedUser.getUuid()));
+                .orElseThrow(() -> new EntityNotFoundException(uuid));
         return modelMapper.map(product, ProductDto.class);
     }
 

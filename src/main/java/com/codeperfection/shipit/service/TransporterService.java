@@ -59,7 +59,7 @@ public class TransporterService {
     @PreAuthorize("hasRole('USER')")
     public TransporterDto getTransporter(UUID uuid, AuthenticatedUser authenticatedUser) {
         final var transporter = transporterRepository.findByUuidAndUser(uuid, User.withUuid(authenticatedUser.getUuid()))
-                .orElseThrow(() -> new EntityNotFoundException(authenticatedUser.getUuid()));
+                .orElseThrow(() -> new EntityNotFoundException(uuid));
         return modelMapper.map(transporter, TransporterDto.class);
     }
 
