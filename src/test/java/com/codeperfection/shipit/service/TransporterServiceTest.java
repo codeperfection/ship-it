@@ -1,13 +1,13 @@
 package com.codeperfection.shipit.service;
 
-import com.codeperfection.shipit.dto.PageDto;
-import com.codeperfection.shipit.dto.PaginationFilterDto;
+import com.codeperfection.shipit.dto.common.PageDto;
+import com.codeperfection.shipit.dto.common.PaginationFilterDto;
 import com.codeperfection.shipit.entity.Transporter;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.repository.TransporterRepository;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
-import com.codeperfection.shipit.util.ShippingFixtureFactory;
+import com.codeperfection.shipit.util.TransporterFixtureFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -42,12 +42,13 @@ public class TransporterServiceTest {
 
     @Test
     public void saveIfValidDtoSavesEntity() {
-        final var transporterDto = ShippingFixtureFactory.createTransporterDto();
-        final var transporter = ShippingFixtureFactory.createTransporter();
+        final var createTransporterDto = TransporterFixtureFactory.createCreateTransporterDto();
+        final var transporterDto = TransporterFixtureFactory.createTransporterDto();
+        final var transporter = TransporterFixtureFactory.createTransporter();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(transporter).when(transporterRepository).save(any());
 
-        final var savedTransporterDto = transporterService.save(transporterDto, authenticatedUser);
+        final var savedTransporterDto = transporterService.save(createTransporterDto, authenticatedUser);
 
         final var transporterArgumentCaptor = ArgumentCaptor.forClass(Transporter.class);
         verify(transporterRepository).save(transporterArgumentCaptor.capture());
@@ -66,7 +67,7 @@ public class TransporterServiceTest {
     public void getTransportersReturnsPaginatedDtos() {
         final var paginationFilterDto = new PaginationFilterDto(2, 1);
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        final var databasePage = new PageImpl<>(List.of(ShippingFixtureFactory.createTransporter()));
+        final var databasePage = new PageImpl<>(List.of(TransporterFixtureFactory.createTransporterDto()));
         doReturn(databasePage).when(transporterRepository).findByUserAndIsActiveTrue(
                 User.withUuid(authenticatedUser.getUuid()), PageRequest.of(paginationFilterDto.getPage(),
                         paginationFilterDto.getSize(), Sort.by("createdAt")));
@@ -74,7 +75,7 @@ public class TransporterServiceTest {
         final var transportersPage = transporterService.getTransporters(paginationFilterDto, authenticatedUser);
 
         assertThat(transportersPage).isEqualTo(new PageDto<>(databasePage.getTotalElements(),
-                databasePage.getTotalPages(), List.of(ShippingFixtureFactory.createTransporterDto())));
+                databasePage.getTotalPages(), List.of(TransporterFixtureFactory.createTransporterDto())));
         verifyNoMoreInteractions(transporterRepository);
     }
 
@@ -92,14 +93,14 @@ public class TransporterServiceTest {
 
     @Test
     public void getTransporterIfFoundReturnsDto() {
-        final var transporter = ShippingFixtureFactory.createTransporter();
+        final var transporterDto = TransporterFixtureFactory.createTransporterDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(transporter.getUuid(),
+        doReturn(Optional.of(transporterDto)).when(transporterRepository).findByUuidAndUser(transporterDto.getUuid(),
                 User.withUuid(authenticatedUser.getUuid()));
 
-        final var transporterDto = transporterService.getTransporter(transporter.getUuid(), authenticatedUser);
+        final var resultTransporterDto = transporterService.getTransporter(transporterDto.getUuid(), authenticatedUser);
 
-        assertThat(transporterDto).isEqualTo(ShippingFixtureFactory.createTransporterDto());
+        assertThat(resultTransporterDto).isEqualTo(transporterDto);
         verifyNoMoreInteractions(transporterRepository);
     }
 }

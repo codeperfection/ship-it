@@ -1,4 +1,4 @@
-package com.codeperfection.shipit.placer;
+package com.codeperfection.shipit.service.shipping.placer;
 
 import org.springframework.stereotype.Service;
 

@@ -1,19 +1,19 @@
-package com.codeperfection.shipit.service;
+package com.codeperfection.shipit.service.shipping;
 
-import com.codeperfection.shipit.dto.CreateShippingDto;
-import com.codeperfection.shipit.dto.PageDto;
-import com.codeperfection.shipit.dto.PaginationFilterDto;
-import com.codeperfection.shipit.dto.ShippingDto;
+import com.codeperfection.shipit.dto.common.PageDto;
+import com.codeperfection.shipit.dto.common.PaginationFilterDto;
+import com.codeperfection.shipit.dto.shipping.CreateShippingDto;
+import com.codeperfection.shipit.dto.shipping.ShippingDto;
 import com.codeperfection.shipit.entity.Product;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.exception.clienterror.ShippingImpossibleException;
-import com.codeperfection.shipit.placer.Item;
-import com.codeperfection.shipit.placer.KnapsackPlacer;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
 import com.codeperfection.shipit.repository.TransporterRepository;
 import com.codeperfection.shipit.security.AuthenticatedUser;
+import com.codeperfection.shipit.service.shipping.placer.Item;
+import com.codeperfection.shipit.service.shipping.placer.KnapsackPlacer;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -90,5 +90,11 @@ public class ShippingService {
         final var shipping = shippingRepository.findByUuidAndUser(uuid, User.withUuid(authenticatedUser.getUuid()))
                 .orElseThrow(() -> new EntityNotFoundException(uuid));
         return shippingHelperComponent.mapToDto(shipping);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public void deleteShipping(UUID shippingUuid, AuthenticatedUser authenticatedUser) {
+        // TODO: fill body
     }
 }

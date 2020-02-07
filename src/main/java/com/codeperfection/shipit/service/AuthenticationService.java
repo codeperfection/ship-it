@@ -1,9 +1,9 @@
 package com.codeperfection.shipit.service;
 
-import com.codeperfection.shipit.dto.JwtResponseDto;
-import com.codeperfection.shipit.dto.SignInDto;
-import com.codeperfection.shipit.dto.SignUpDto;
-import com.codeperfection.shipit.dto.UserDto;
+import com.codeperfection.shipit.dto.auth.JwtResponseDto;
+import com.codeperfection.shipit.dto.auth.SignInDto;
+import com.codeperfection.shipit.dto.auth.SignUpDto;
+import com.codeperfection.shipit.dto.auth.UserDto;
 import com.codeperfection.shipit.entity.Role;
 import com.codeperfection.shipit.entity.RoleName;
 import com.codeperfection.shipit.entity.User;

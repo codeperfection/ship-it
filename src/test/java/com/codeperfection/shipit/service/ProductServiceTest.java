@@ -1,7 +1,7 @@
 package com.codeperfection.shipit.service;
 
-import com.codeperfection.shipit.dto.PageDto;
-import com.codeperfection.shipit.dto.PaginationFilterDto;
+import com.codeperfection.shipit.dto.common.PageDto;
+import com.codeperfection.shipit.dto.common.PaginationFilterDto;
 import com.codeperfection.shipit.entity.Product;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
@@ -42,12 +42,13 @@ public class ProductServiceTest {
 
     @Test
     public void saveIfValidDtoSavesEntity() {
+        final var createProductDto = ProductFixtureFactory.createCreateProductDto();
         final var productDto = ProductFixtureFactory.createProductDto();
         final var product = ProductFixtureFactory.createProduct();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(product).when(productRepository).save(any());
 
-        final var savedProductDto = productService.save(productDto, authenticatedUser);
+        final var savedProductDto = productService.save(createProductDto, authenticatedUser);
 
         final var productArgumentCaptor = ArgumentCaptor.forClass(Product.class);
         verify(productRepository).save(productArgumentCaptor.capture());

@@ -1,25 +1,18 @@
-package com.codeperfection.shipit.dto;
+package com.codeperfection.shipit.dto.product;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransporterDto {
-
-    private UUID uuid;
-
-    @NotBlank
-    private String name;
+public class UpdateCountInStockDto {
 
     @NotNull
     @Min(0)
-    private Integer capacity;
+    private Integer countInStock;
 }

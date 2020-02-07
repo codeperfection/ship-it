@@ -1,6 +1,6 @@
 package com.codeperfection.shipit.security;
 
-import com.codeperfection.shipit.controller.RequestValues;
+import com.codeperfection.shipit.controller.AuthenticationController;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,7 +53,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
-                .antMatchers("/**" + RequestValues.SIGN_IN, "/**" + RequestValues.SIGN_UP).permitAll()
+                .antMatchers("/**" + AuthenticationController.SIGN_IN_PATH,
+                        "/**" + AuthenticationController.SIGN_UP_PATH).permitAll()
                 .anyRequest().authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

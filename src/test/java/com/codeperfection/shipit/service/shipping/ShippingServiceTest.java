@@ -1,18 +1,19 @@
-package com.codeperfection.shipit.service;
+package com.codeperfection.shipit.service.shipping;
 
-import com.codeperfection.shipit.dto.PageDto;
-import com.codeperfection.shipit.dto.PaginationFilterDto;
+import com.codeperfection.shipit.dto.common.PageDto;
+import com.codeperfection.shipit.dto.common.PaginationFilterDto;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.exception.clienterror.ShippingImpossibleException;
-import com.codeperfection.shipit.placer.Knapsack;
-import com.codeperfection.shipit.placer.KnapsackPlacer;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
 import com.codeperfection.shipit.repository.TransporterRepository;
+import com.codeperfection.shipit.service.shipping.placer.Knapsack;
+import com.codeperfection.shipit.service.shipping.placer.KnapsackPlacer;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.ProductFixtureFactory;
 import com.codeperfection.shipit.util.ShippingFixtureFactory;
+import com.codeperfection.shipit.util.TransporterFixtureFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -64,7 +65,7 @@ public class ShippingServiceTest {
     public void createShippingIfShippingImpossibleThrowsException() {
         final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        final var transporter = ShippingFixtureFactory.createTransporter();
+        final var transporter = TransporterFixtureFactory.createTransporter();
         final var user = User.withUuid(authenticatedUser.getUuid());
         doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(
                 createShippingDto.getTransporterUuid(), user);
@@ -85,7 +86,7 @@ public class ShippingServiceTest {
     public void createShippingIfShippingPossibleReturnsDto() {
         final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        final var transporter = ShippingFixtureFactory.createTransporter();
+        final var transporter = TransporterFixtureFactory.createTransporter();
         final var user = User.withUuid(authenticatedUser.getUuid());
         doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(
                 createShippingDto.getTransporterUuid(), user);

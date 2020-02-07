@@ -1,8 +1,11 @@
 package com.codeperfection.shipit.service;
 
-import com.codeperfection.shipit.dto.PageDto;
-import com.codeperfection.shipit.dto.PaginationFilterDto;
-import com.codeperfection.shipit.dto.ProductDto;
+import com.codeperfection.shipit.dto.common.PageDto;
+import com.codeperfection.shipit.dto.common.PaginationFilterDto;
+import com.codeperfection.shipit.dto.product.CreateProductDto;
+import com.codeperfection.shipit.dto.product.ProductDto;
+import com.codeperfection.shipit.dto.product.UpdateCountInStockDto;
+import com.codeperfection.shipit.dto.product.UpdateProductDto;
 import com.codeperfection.shipit.entity.Product;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
@@ -33,8 +36,8 @@ public class ProductService {
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public ProductDto save(ProductDto productDto, AuthenticatedUser authenticatedUser) {
-        final var product = productRepository.save(createProduct(productDto, authenticatedUser.getUuid()));
+    public ProductDto save(CreateProductDto createProductDto, AuthenticatedUser authenticatedUser) {
+        final var product = productRepository.save(createProduct(createProductDto, authenticatedUser.getUuid()));
         return modelMapper.map(product, ProductDto.class);
     }
 
@@ -62,13 +65,35 @@ public class ProductService {
         return modelMapper.map(product, ProductDto.class);
     }
 
-    private Product createProduct(ProductDto productDto, UUID userUuid) {
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public ProductDto update(UUID productUuid, UpdateProductDto updateProductDto,
+                             AuthenticatedUser authenticatedUser) {
+        // TODO: fill body
+        return null;
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public ProductDto update(UUID productUuid, UpdateCountInStockDto countInStockDto,
+                             AuthenticatedUser authenticatedUser) {
+        // TODO: fill body
+        return null;
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public void delete(UUID productUuid, AuthenticatedUser authenticatedUser) {
+        // TODO: fill body
+    }
+
+    private Product createProduct(CreateProductDto createProductDto, UUID userUuid) {
         return Product.builder()
                 .uuid(UUID.randomUUID())
-                .name(productDto.getName())
-                .volume(productDto.getVolume())
-                .price(productDto.getPrice())
-                .countInStock(productDto.getCountInStock())
+                .name(createProductDto.getName())
+                .volume(createProductDto.getVolume())
+                .price(createProductDto.getPrice())
+                .countInStock(createProductDto.getCountInStock())
                 .isActive(true)
                 .createdAt(OffsetDateTime.now())
                 .user(User.withUuid(userUuid))

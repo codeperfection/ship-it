@@ -1,9 +1,9 @@
 package com.codeperfection.shipit.controller;
 
-import com.codeperfection.shipit.dto.CreateShippingDto;
-import com.codeperfection.shipit.dto.PaginationFilterDto;
+import com.codeperfection.shipit.dto.common.PaginationFilterDto;
+import com.codeperfection.shipit.dto.shipping.CreateShippingDto;
 import com.codeperfection.shipit.exception.ErrorType;
-import com.codeperfection.shipit.service.ShippingService;
+import com.codeperfection.shipit.service.shipping.ShippingService;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.CommonFixtureFactory;
 import com.codeperfection.shipit.util.ShippingFixtureFactory;
@@ -15,8 +15,8 @@ import org.springframework.http.MediaType;
 
 import java.util.UUID;
 
-import static com.codeperfection.shipit.controller.RequestValues.API_V1;
-import static com.codeperfection.shipit.controller.RequestValues.SHIPPINGS;
+import static com.codeperfection.shipit.controller.CommonPathValues.API_V1;
+import static com.codeperfection.shipit.controller.ShippingController.SHIPPINGS_PATH;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
@@ -31,14 +31,14 @@ public class ShippingControllerTest extends ControllerTestBase {
 
     @Test
     public void createShippingIfNotAuthenticatedReturnsError() throws Exception {
-        checkUnauthorizedResponse(post(API_V1 + SHIPPINGS));
+        checkUnauthorizedResponse(post(API_V1 + SHIPPINGS_PATH));
     }
 
     @Test
     public void createShippingIfInvalidPayloadReturnsError() throws Exception {
         mockAuthentication();
         final var createShippingDto = new CreateShippingDto("", null, null);
-        mockMvc.perform(post(API_V1 + SHIPPINGS)
+        mockMvc.perform(post(API_V1 + SHIPPINGS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createShippingDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
@@ -56,27 +56,27 @@ public class ShippingControllerTest extends ControllerTestBase {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var shippingDto = ShippingFixtureFactory.createShippingDto();
         doReturn(shippingDto).when(shippingService).createShipping(createShippingDto, authenticatedUser);
-        mockMvc.perform(post(API_V1 + SHIPPINGS)
+        mockMvc.perform(post(API_V1 + SHIPPINGS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createShippingDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(shippingDto)))
-                .andExpect(redirectedUrlPattern("http://*" + API_V1 + SHIPPINGS + "/" + shippingDto.getUuid()));
+                .andExpect(redirectedUrlPattern("http://*" + API_V1 + SHIPPINGS_PATH + "/" + shippingDto.getUuid()));
         verify(shippingService).createShipping(createShippingDto, authenticatedUser);
         verifyNoMoreInteractions(shippingService);
     }
 
     @Test
     public void getShippingsIfNotAuthenticatedReturnsError() throws Exception {
-        checkUnauthorizedResponse(get(API_V1 + SHIPPINGS));
+        checkUnauthorizedResponse(get(API_V1 + SHIPPINGS_PATH));
     }
 
     @Test
     public void getShippingsIfInvalidPaginationReturnsError() throws Exception {
         mockAuthentication();
         final var invalidPaginationFilterDto = new PaginationFilterDto(-1, 0);
-        mockMvc.perform(get(API_V1 + SHIPPINGS)
+        mockMvc.perform(get(API_V1 + SHIPPINGS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .params(TestUtil.toMultiValueMap(invalidPaginationFilterDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
@@ -94,7 +94,7 @@ public class ShippingControllerTest extends ControllerTestBase {
         final var shippingDto = ShippingFixtureFactory.createShippingDto();
         final var pageDto = CommonFixtureFactory.createPageDto(shippingDto);
         doReturn(pageDto).when(shippingService).getShippings(paginationFilterDto, authenticatedUser);
-        mockMvc.perform(get(API_V1 + SHIPPINGS)
+        mockMvc.perform(get(API_V1 + SHIPPINGS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .params(TestUtil.toMultiValueMap(paginationFilterDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
@@ -107,7 +107,7 @@ public class ShippingControllerTest extends ControllerTestBase {
     @Test
     public void getShippingIfNotAuthenticatedReturnsError() throws Exception {
         final var invalidUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
-        checkUnauthorizedResponse(get(API_V1 + SHIPPINGS + "/" + invalidUuid));
+        checkUnauthorizedResponse(get(API_V1 + SHIPPINGS_PATH + "/" + invalidUuid));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class ShippingControllerTest extends ControllerTestBase {
         mockAuthentication();
         final var shippingDto = ShippingFixtureFactory.createShippingDto();
         doReturn(shippingDto).when(shippingService).getShipping(shippingDto.getUuid(), authenticatedUser);
-        mockMvc.perform(get(API_V1 + SHIPPINGS + "/" + shippingDto.getUuid())
+        mockMvc.perform(get(API_V1 + SHIPPINGS_PATH + "/" + shippingDto.getUuid())
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("uuid", shippingDto.getUuid().toString())
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))

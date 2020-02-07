@@ -1,11 +1,11 @@
 package com.codeperfection.shipit.controller;
 
-import com.codeperfection.shipit.dto.CreateShippingDto;
-import com.codeperfection.shipit.dto.PageDto;
-import com.codeperfection.shipit.dto.PaginationFilterDto;
-import com.codeperfection.shipit.dto.ShippingDto;
+import com.codeperfection.shipit.dto.common.PageDto;
+import com.codeperfection.shipit.dto.common.PaginationFilterDto;
+import com.codeperfection.shipit.dto.shipping.CreateShippingDto;
+import com.codeperfection.shipit.dto.shipping.ShippingDto;
 import com.codeperfection.shipit.security.AuthenticatedUser;
-import com.codeperfection.shipit.service.ShippingService;
+import com.codeperfection.shipit.service.shipping.ShippingService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +16,12 @@ import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(RequestValues.API_V1 + RequestValues.SHIPPINGS)
+@RequestMapping(CommonPathValues.API_V1 + ShippingController.SHIPPINGS_PATH)
 public class ShippingController {
+
+    static final String SHIPPINGS_PATH = "/shippings";
+
+    static final String SHIPPING_UUID_PATH = "/{shippingUuid}";
 
     private ShippingService shippingService;
 
@@ -29,7 +33,7 @@ public class ShippingController {
     public ResponseEntity<ShippingDto> createShipping(@Valid @RequestBody CreateShippingDto createShippingDto,
                                                       @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         final var shipping = shippingService.createShipping(createShippingDto, authenticatedUser);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(RequestValues.UUID_PARAM)
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(SHIPPING_UUID_PATH)
                 .buildAndExpand(shipping.getUuid()).toUri();
         return ResponseEntity.created(location).body(shipping);
     }
@@ -41,9 +45,15 @@ public class ShippingController {
         return ResponseEntity.ok(shippingService.getShippings(paginationFilterDto, authenticatedUser));
     }
 
-    @GetMapping(RequestValues.UUID_PARAM)
+    @GetMapping(SHIPPING_UUID_PATH)
     public ResponseEntity<ShippingDto> getShipping(
-            @PathVariable UUID uuid, @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        return ResponseEntity.ok(shippingService.getShipping(uuid, authenticatedUser));
+            @PathVariable UUID shippingUuid, @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        return ResponseEntity.ok(shippingService.getShipping(shippingUuid, authenticatedUser));
+    }
+
+    @DeleteMapping(SHIPPING_UUID_PATH)
+    public void deleteShipping(@PathVariable UUID shippingUuid,
+                               @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        shippingService.deleteShipping(shippingUuid, authenticatedUser);
     }
 }

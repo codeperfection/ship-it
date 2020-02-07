@@ -1,5 +1,6 @@
-package com.codeperfection.shipit.dto;
+package com.codeperfection.shipit.dto.shipping;
 
+import com.codeperfection.shipit.dto.transporter.TransporterDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

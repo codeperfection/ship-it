@@ -1,4 +1,4 @@
-package com.codeperfection.shipit.dto;
+package com.codeperfection.shipit.dto.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,12 +1,13 @@
-package com.codeperfection.shipit.service;
+package com.codeperfection.shipit.service.shipping;
 
 import com.codeperfection.shipit.entity.Shipping;
-import com.codeperfection.shipit.placer.Item;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
+import com.codeperfection.shipit.service.shipping.placer.Item;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.ProductFixtureFactory;
 import com.codeperfection.shipit.util.ShippingFixtureFactory;
+import com.codeperfection.shipit.util.TransporterFixtureFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -68,8 +69,9 @@ public class ShippingHelperComponentTest {
         doReturn(shipping).when(shippingRepository).save(any());
 
         final var shippedItems = ShippingFixtureFactory.createShippedItems();
-        final var returnedShipping = shippingHelperComponent.saveShipping(ShippingFixtureFactory.createCreateShippingDto(),
-                ShippingFixtureFactory.createTransporter(), AuthenticationFixtureFactory.createUser(), shippedItems);
+        final var returnedShipping = shippingHelperComponent.saveShipping(
+                ShippingFixtureFactory.createCreateShippingDto(), TransporterFixtureFactory.createTransporter(),
+                AuthenticationFixtureFactory.createUser(), shippedItems);
         assertThat(returnedShipping).isEqualTo(shipping);
 
         final var shippingArgumentCaptor = ArgumentCaptor.forClass(Shipping.class);

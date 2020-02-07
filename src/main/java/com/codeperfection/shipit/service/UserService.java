@@ -1,7 +1,7 @@
 package com.codeperfection.shipit.service;
 
-import com.codeperfection.shipit.dto.ChangePasswordDto;
-import com.codeperfection.shipit.dto.UserDto;
+import com.codeperfection.shipit.dto.auth.ChangePasswordDto;
+import com.codeperfection.shipit.dto.auth.UserDto;
 import com.codeperfection.shipit.exception.authorization.UserNotFoundException;
 import com.codeperfection.shipit.exception.clienterror.IncorrectPasswordException;
 import com.codeperfection.shipit.repository.UserRepository;

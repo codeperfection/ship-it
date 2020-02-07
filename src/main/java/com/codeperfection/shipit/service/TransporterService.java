@@ -1,8 +1,9 @@
 package com.codeperfection.shipit.service;
 
-import com.codeperfection.shipit.dto.PageDto;
-import com.codeperfection.shipit.dto.PaginationFilterDto;
-import com.codeperfection.shipit.dto.TransporterDto;
+import com.codeperfection.shipit.dto.common.PageDto;
+import com.codeperfection.shipit.dto.common.PaginationFilterDto;
+import com.codeperfection.shipit.dto.transporter.CreateTransporterDto;
+import com.codeperfection.shipit.dto.transporter.TransporterDto;
 import com.codeperfection.shipit.entity.Transporter;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
@@ -33,8 +34,8 @@ public class TransporterService {
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public TransporterDto save(TransporterDto transporterDto, AuthenticatedUser authenticatedUser) {
-        final var transporter = transporterRepository.save(createTransporter(transporterDto,
+    public TransporterDto save(CreateTransporterDto createTransporterDto, AuthenticatedUser authenticatedUser) {
+        final var transporter = transporterRepository.save(createTransporter(createTransporterDto,
                 authenticatedUser.getUuid()));
         return modelMapper.map(transporter, TransporterDto.class);
     }
@@ -63,11 +64,11 @@ public class TransporterService {
         return modelMapper.map(transporter, TransporterDto.class);
     }
 
-    private Transporter createTransporter(TransporterDto transporterDto, UUID userUuid) {
+    private Transporter createTransporter(CreateTransporterDto createTransporterDto, UUID userUuid) {
         return Transporter.builder()
                 .uuid(UUID.randomUUID())
-                .name(transporterDto.getName())
-                .capacity(transporterDto.getCapacity())
+                .name(createTransporterDto.getName())
+                .capacity(createTransporterDto.getCapacity())
                 .isActive(true)
                 .createdAt(OffsetDateTime.now())
                 .user(User.withUuid(userUuid))

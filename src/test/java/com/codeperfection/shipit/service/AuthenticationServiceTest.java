@@ -1,7 +1,7 @@
 package com.codeperfection.shipit.service;
 
-import com.codeperfection.shipit.dto.JwtResponseDto;
-import com.codeperfection.shipit.dto.UserDto;
+import com.codeperfection.shipit.dto.auth.JwtResponseDto;
+import com.codeperfection.shipit.dto.auth.UserDto;
 import com.codeperfection.shipit.entity.RoleName;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EmailAlreadyTakenException;

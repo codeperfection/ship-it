@@ -1,4 +1,4 @@
-package com.codeperfection.shipit.placer;
+package com.codeperfection.shipit.service.shipping.placer;
 
 import com.codeperfection.shipit.entity.Product;
 import org.junit.jupiter.api.Test;

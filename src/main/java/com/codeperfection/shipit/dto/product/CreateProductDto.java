@@ -1,4 +1,4 @@
-package com.codeperfection.shipit.dto;
+package com.codeperfection.shipit.dto.product;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,14 +7,11 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDto {
-
-    private UUID uuid;
+public class CreateProductDto {
 
     @NotBlank
     private String name;

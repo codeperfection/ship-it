@@ -1,4 +1,4 @@
-package com.codeperfection.shipit.dto;
+package com.codeperfection.shipit.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,11 +9,13 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShippedItemDto {
+public class UserDto {
 
     private UUID uuid;
 
-    private ProductDto product;
+    private String username;
 
-    private Integer count;
+    private String email;
+
+    private String name;
 }

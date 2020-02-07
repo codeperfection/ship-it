@@ -1,6 +1,6 @@
 package com.codeperfection.shipit.util;
 
-import com.codeperfection.shipit.dto.*;
+import com.codeperfection.shipit.dto.auth.*;
 import com.codeperfection.shipit.entity.Role;
 import com.codeperfection.shipit.entity.RoleName;
 import com.codeperfection.shipit.entity.User;
