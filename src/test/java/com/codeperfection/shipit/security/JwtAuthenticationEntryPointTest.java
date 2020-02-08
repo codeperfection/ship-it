@@ -1,7 +1,7 @@
 package com.codeperfection.shipit.security;
 
-import com.codeperfection.shipit.exception.ErrorType;
 import com.codeperfection.shipit.exception.authorization.JwtTokenInvalidatedException;
+import com.codeperfection.shipit.exception.errordto.ErrorType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

@@ -1,7 +1,7 @@
 package com.codeperfection.shipit.security;
 
-import com.codeperfection.shipit.exception.ApiError;
 import com.codeperfection.shipit.exception.InternalServerErrorException;
+import com.codeperfection.shipit.exception.errordto.ApiError;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;

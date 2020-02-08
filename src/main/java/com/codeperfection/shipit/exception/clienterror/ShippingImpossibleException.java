@@ -1,6 +1,6 @@
 package com.codeperfection.shipit.exception.clienterror;
 
-import com.codeperfection.shipit.exception.ErrorType;
+import com.codeperfection.shipit.exception.errordto.ErrorType;
 import org.springframework.http.HttpStatus;
 
 public class ShippingImpossibleException extends ClientErrorException {

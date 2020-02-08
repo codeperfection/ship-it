@@ -1,4 +1,4 @@
-package com.codeperfection.shipit.exception;
+package com.codeperfection.shipit.exception.errordto;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;

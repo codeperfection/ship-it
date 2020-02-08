@@ -1,6 +1,6 @@
 package com.codeperfection.shipit.controller;
 
-import com.codeperfection.shipit.exception.ErrorType;
+import com.codeperfection.shipit.exception.errordto.ErrorType;
 import com.codeperfection.shipit.security.AuthenticatedUser;
 import com.codeperfection.shipit.security.JwtTokenProvider;
 import com.codeperfection.shipit.security.SecurityUserDetailsService;

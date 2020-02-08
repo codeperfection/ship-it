@@ -33,9 +33,7 @@ public class ShippingController {
     public ResponseEntity<ShippingDto> createShipping(@Valid @RequestBody CreateShippingDto createShippingDto,
                                                       @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         final var shipping = shippingService.createShipping(createShippingDto, authenticatedUser);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(SHIPPING_UUID_PATH)
-                .buildAndExpand(shipping.getUuid()).toUri();
-        return ResponseEntity.created(location).body(shipping);
+        return ResponseEntity.created(getLocation(shipping.getUuid())).body(shipping);
     }
 
     @GetMapping
@@ -55,5 +53,10 @@ public class ShippingController {
     public void deleteShipping(@PathVariable UUID shippingUuid,
                                @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         shippingService.deleteShipping(shippingUuid, authenticatedUser);
+    }
+
+    private URI getLocation(UUID shippingUuid) {
+        return ServletUriComponentsBuilder.fromCurrentRequest().path(SHIPPING_UUID_PATH)
+                .buildAndExpand(shippingUuid).toUri();
     }
 }

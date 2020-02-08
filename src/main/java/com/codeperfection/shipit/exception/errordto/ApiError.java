@@ -1,4 +1,4 @@
-package com.codeperfection.shipit.exception;
+package com.codeperfection.shipit.exception.errordto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

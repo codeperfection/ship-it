@@ -2,7 +2,7 @@ package com.codeperfection.shipit.controller;
 
 import com.codeperfection.shipit.dto.auth.SignInDto;
 import com.codeperfection.shipit.dto.auth.SignUpDto;
-import com.codeperfection.shipit.exception.ErrorType;
+import com.codeperfection.shipit.exception.errordto.ErrorType;
 import com.codeperfection.shipit.service.AuthenticationService;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import org.junit.jupiter.api.Test;

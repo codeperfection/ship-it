@@ -3,7 +3,6 @@ package com.codeperfection.shipit.service.shipping.placer;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.util.List;
 
@@ -13,9 +12,8 @@ import java.util.List;
  */
 @AllArgsConstructor
 @EqualsAndHashCode
-@ToString
 @Getter
-public class Knapsack {
+class Knapsack implements ItemsStorage {
 
     private int capacity;
 

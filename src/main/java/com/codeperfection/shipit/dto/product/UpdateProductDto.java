@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 @Data
 @NoArgsConstructor
@@ -14,6 +15,7 @@ public class UpdateProductDto {
 
     // Not blank and not empty, but can be null.
     @Pattern(regexp = "(.|\\s)*\\S(.|\\s)*")
+    @Size(max = 256)
     private String name;
 
     @Min(1)

@@ -2,14 +2,12 @@ package com.codeperfection.shipit.service.shipping;
 
 import com.codeperfection.shipit.dto.common.PageDto;
 import com.codeperfection.shipit.dto.common.PaginationFilterDto;
+import com.codeperfection.shipit.entity.Product;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
-import com.codeperfection.shipit.exception.clienterror.ShippingImpossibleException;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
 import com.codeperfection.shipit.repository.TransporterRepository;
-import com.codeperfection.shipit.service.shipping.placer.Knapsack;
-import com.codeperfection.shipit.service.shipping.placer.KnapsackPlacer;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.ProductFixtureFactory;
 import com.codeperfection.shipit.util.ShippingFixtureFactory;
@@ -23,7 +21,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -44,9 +45,6 @@ public class ShippingServiceTest {
     @Mock
     private ShippingRepository shippingRepository;
 
-    @Mock
-    private KnapsackPlacer knapsackPlacer;
-
     @InjectMocks
     private ShippingService shippingService;
 
@@ -58,28 +56,7 @@ public class ShippingServiceTest {
                 User.withUuid(authenticatedUser.getUuid()));
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> shippingService.createShipping(
                 createShippingDto, authenticatedUser));
-        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, knapsackPlacer);
-    }
-
-    @Test
-    public void createShippingIfShippingImpossibleThrowsException() {
-        final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
-        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        final var transporter = TransporterFixtureFactory.createTransporter();
-        final var user = User.withUuid(authenticatedUser.getUuid());
-        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(
-                createShippingDto.getTransporterUuid(), user);
-
-        final var product = ProductFixtureFactory.createProduct();
-        final var knapsackItems = ProductFixtureFactory.createKnapsackItems();
-        doReturn(List.of(product)).when(productRepository).findByUserAndIsActiveTrue(user);
-        doReturn(knapsackItems).when(shippingHelperComponent).convertToItems(List.of(product));
-        final var emptyKnapsack = new Knapsack(0, 0, Collections.emptyList());
-        doReturn(emptyKnapsack).when(knapsackPlacer).place(knapsackItems, transporter.getCapacity());
-
-        assertThatExceptionOfType(ShippingImpossibleException.class).isThrownBy(() -> shippingService.createShipping(
-                createShippingDto, authenticatedUser));
-        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, knapsackPlacer);
+        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
     }
 
     @Test
@@ -92,24 +69,22 @@ public class ShippingServiceTest {
                 createShippingDto.getTransporterUuid(), user);
 
         final var product = ProductFixtureFactory.createProduct();
-        final var knapsackItems = ProductFixtureFactory.createKnapsackItems();
-        doReturn(List.of(product)).when(productRepository).findByUserAndIsActiveTrue(user);
-        doReturn(knapsackItems).when(shippingHelperComponent).convertToItems(List.of(product));
-        final var knapsack = ProductFixtureFactory.crateKnapsack();
-        doReturn(knapsack).when(knapsackPlacer).place(knapsackItems, transporter.getCapacity());
+        List<Product> products = List.of(product);
+        doReturn(products).when(productRepository).findByUserAndIsActiveTrue(user);
+        final var placedProducts = Map.of(product, 3L);
+        doReturn(placedProducts).when(shippingHelperComponent).runPlacer(transporter, products);
 
-        final var productToCount = Map.of(product, 2L);
-        doNothing().when(shippingHelperComponent).deductPlacedProductsFromStock(productToCount);
         final var shipping = ShippingFixtureFactory.createShipping();
-        doReturn(shipping.getShippedItems()).when(shippingHelperComponent).createShippedItems(productToCount);
+        doReturn(shipping.getShippedItems()).when(shippingHelperComponent).createShippedItems(placedProducts);
         doReturn(shipping).when(shippingHelperComponent).saveShipping(createShippingDto, transporter, user,
                 shipping.getShippedItems());
         final var shippingDto = ShippingFixtureFactory.createShippingDto();
         doReturn(shippingDto).when(shippingHelperComponent).mapToDto(shipping);
 
         assertThat(shippingService.createShipping(createShippingDto, authenticatedUser)).isEqualTo(shippingDto);
-
-        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, knapsackPlacer);
+        verify(shippingHelperComponent).runPlacer(transporter, products);
+        verify(shippingHelperComponent).deductPlacedProductsFromStock(placedProducts);
+        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
     }
 
     @Test
@@ -127,7 +102,7 @@ public class ShippingServiceTest {
 
         assertThat(shippingsPage).isEqualTo(new PageDto<>(databasePage.getTotalElements(),
                 databasePage.getTotalPages(), List.of(shippingDto)));
-        verifyNoMoreInteractions(shippingRepository, shippingHelperComponent);
+        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
     }
 
     @Test
@@ -139,7 +114,7 @@ public class ShippingServiceTest {
 
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() ->
                 shippingService.getShipping(nonExistingUuid, authenticatedUser));
-        verifyNoMoreInteractions(shippingRepository, shippingHelperComponent);
+        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
     }
 
     @Test
@@ -154,6 +129,6 @@ public class ShippingServiceTest {
         final var shippingDto = shippingService.getShipping(shipping.getUuid(), authenticatedUser);
 
         assertThat(shippingDto).isEqualTo(expectedShippingDto);
-        verifyNoMoreInteractions(shippingRepository, shippingHelperComponent);
+        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
     }
 }

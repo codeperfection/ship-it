@@ -1,6 +1,9 @@
 package com.codeperfection.shipit.exception;
 
 import com.codeperfection.shipit.exception.clienterror.ClientErrorException;
+import com.codeperfection.shipit.exception.errordto.ApiError;
+import com.codeperfection.shipit.exception.errordto.ApiFieldError;
+import com.codeperfection.shipit.exception.errordto.ErrorType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

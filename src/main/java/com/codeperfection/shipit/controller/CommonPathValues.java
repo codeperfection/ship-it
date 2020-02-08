@@ -1,6 +1,5 @@
 package com.codeperfection.shipit.controller;
 
-@SuppressWarnings("WeakerAccess")
 public final class CommonPathValues {
 
     private CommonPathValues() {

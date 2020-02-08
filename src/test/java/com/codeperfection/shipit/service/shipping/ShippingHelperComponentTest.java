@@ -1,13 +1,19 @@
 package com.codeperfection.shipit.service.shipping;
 
+import com.codeperfection.shipit.entity.Product;
 import com.codeperfection.shipit.entity.Shipping;
+import com.codeperfection.shipit.entity.Transporter;
+import com.codeperfection.shipit.exception.clienterror.ShippingImpossibleException;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
 import com.codeperfection.shipit.service.shipping.placer.Item;
+import com.codeperfection.shipit.service.shipping.placer.ItemsStorage;
+import com.codeperfection.shipit.service.shipping.placer.KnapsackPlacer;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.ProductFixtureFactory;
 import com.codeperfection.shipit.util.ShippingFixtureFactory;
 import com.codeperfection.shipit.util.TransporterFixtureFactory;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,12 +24,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -35,6 +41,9 @@ public class ShippingHelperComponentTest {
 
     @Mock
     private ShippingRepository shippingRepository;
+
+    @Mock
+    private KnapsackPlacer knapsackPlacer;
 
     @Spy
     private ModelMapper modelMapper;
@@ -48,6 +57,44 @@ public class ShippingHelperComponentTest {
         final var expectedItem = new Item(product, product.getVolume(), product.getPrice());
         final var items = shippingHelperComponent.convertToItems(List.of(product));
         assertThat(items).containsExactlyElementsOf(Collections.nCopies(product.getCountInStock(), expectedItem));
+        verifyNoMoreInteractions(productRepository, shippingRepository, knapsackPlacer);
+    }
+
+    @Test
+    public void runPlacerIfPlacementImpossibleThrowsException() {
+        final var transporterCapacity = 10;
+        final Product product = ProductFixtureFactory.createProduct();
+        final Item[] items = new Item[product.getCountInStock()];
+        Arrays.fill(items, Item.valueOf(product));
+        final ItemsStorage storage = mock(ItemsStorage.class);
+        doReturn(Collections.emptyList()).when(storage).getItems();
+        doReturn(storage).when(knapsackPlacer).place(items, transporterCapacity);
+
+        assertThatExceptionOfType(ShippingImpossibleException.class).isThrownBy(() ->
+                shippingHelperComponent.runPlacer(Transporter.builder().capacity(transporterCapacity).build(),
+                        Collections.singletonList(product)));
+
+        verify(knapsackPlacer).place(items, transporterCapacity);
+        verifyNoMoreInteractions(productRepository, shippingRepository, knapsackPlacer);
+    }
+
+    @Test
+    public void runPlacerIfPlacementPossibleReturnWantedResult() {
+        final var transporterCapacity = 10;
+        final Product product = ProductFixtureFactory.createProduct();
+        final Item[] items = new Item[product.getCountInStock()];
+        Item item = Item.valueOf(product);
+        Arrays.fill(items, item);
+        final ItemsStorage storage = mock(ItemsStorage.class);
+        Lists.list(item, item, item);
+        doReturn(Lists.list(item, item, item)).when(storage).getItems();
+        doReturn(storage).when(knapsackPlacer).place(items, transporterCapacity);
+
+        assertThat(shippingHelperComponent.runPlacer(Transporter.builder().capacity(transporterCapacity).build(),
+                Collections.singletonList(product))).contains(Map.entry(product, 3L));
+
+        verify(knapsackPlacer).place(items, transporterCapacity);
+        verifyNoMoreInteractions(productRepository, shippingRepository, knapsackPlacer);
     }
 
     @Test
@@ -60,7 +107,7 @@ public class ShippingHelperComponentTest {
         shippingHelperComponent.deductPlacedProductsFromStock(Map.of(product, (long) count));
 
         assertThat(product).isEqualTo(placedProduct);
-        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productRepository, shippingRepository, knapsackPlacer);
     }
 
     @Test
@@ -84,7 +131,7 @@ public class ShippingHelperComponentTest {
         shippedItems.forEach(shippedItem -> assertThat(shippedItem.getShipping()).isEqualTo(savedShipping));
         assertThat(savedShipping.getShippedItems()).usingElementComparatorIgnoringFields("shipping")
                 .containsExactlyElementsOf(shippedItems);
-        verifyNoMoreInteractions(shippingRepository);
+        verifyNoMoreInteractions(productRepository, shippingRepository, knapsackPlacer);
     }
 
     @Test
@@ -95,11 +142,13 @@ public class ShippingHelperComponentTest {
 
         assertThat(shippedItems).usingElementComparatorIgnoringFields("uuid")
                 .containsExactlyElementsOf(ShippingFixtureFactory.createShippedItems());
+        verifyNoMoreInteractions(productRepository, shippingRepository, knapsackPlacer);
     }
 
     @Test
     public void mapToDtoReturnsDto() {
         assertThat(shippingHelperComponent.mapToDto(ShippingFixtureFactory.createShipping()))
                 .isEqualTo(ShippingFixtureFactory.createShippingDto());
+        verifyNoMoreInteractions(productRepository, shippingRepository, knapsackPlacer);
     }
 }

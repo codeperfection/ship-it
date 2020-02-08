@@ -1,15 +1,15 @@
 package com.codeperfection.shipit.service.shipping.placer;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Component
 public class KnapsackPlacer {
 
-    public Knapsack place(Item[] items, int capacity) {
-        int[][] maxTotalPrices = calculateMaxTotalPrices(items, capacity);
+    public ItemsStorage place(Item[] items, int capacity) {
+        final int[][] maxTotalPrices = calculateMaxTotalPrices(items, capacity);
         int maxTotalPrice = maxTotalPrices[items.length][capacity];
         int currentCapacity = capacity;
         List<Item> optimalPlacementItems = new ArrayList<>();
@@ -29,21 +29,22 @@ public class KnapsackPlacer {
     }
 
     private int[][] calculateMaxTotalPrices(Item[] items, int capacity) {
-        int[][] maxTotalPrices = new int[items.length + 1][capacity + 1];
+        final int[][] maxTotalPrices = new int[items.length + 1][capacity + 1];
         for (int currentCapacity = 0; currentCapacity <= capacity; currentCapacity++) {
             maxTotalPrices[0][currentCapacity] = 0;
         }
 
         for (int itemsSize = 1; itemsSize <= items.length; itemsSize++) {
             for (int currentCapacity = 0; currentCapacity <= capacity; currentCapacity++) {
-                int lastItemIndex = itemsSize - 1;
+                final int lastItemIndex = itemsSize - 1;
                 final var lastItem = items[lastItemIndex];
-                int withoutLastItem = maxTotalPrices[lastItemIndex][currentCapacity];
+                final int withoutLastItem = maxTotalPrices[lastItemIndex][currentCapacity];
                 if (lastItem.getVolume() > currentCapacity) {
                     maxTotalPrices[itemsSize][currentCapacity] = withoutLastItem;
                 } else {
-                    int capacityWithoutLastItem = currentCapacity - lastItem.getVolume();
-                    int withLastItem = lastItem.getPrice() + maxTotalPrices[lastItemIndex][capacityWithoutLastItem];
+                    final int capacityWithoutLastItem = currentCapacity - lastItem.getVolume();
+                    final int withLastItem = lastItem.getPrice() +
+                            maxTotalPrices[lastItemIndex][capacityWithoutLastItem];
                     maxTotalPrices[itemsSize][currentCapacity] = Math.max(withoutLastItem, withLastItem);
                 }
             }

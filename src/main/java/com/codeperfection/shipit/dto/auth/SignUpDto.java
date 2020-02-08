@@ -13,6 +13,7 @@ public class SignUpDto {
 
     @NotNull
     @Pattern(regexp = "^[\\p{Alnum}]{4,64}$")
+    @Size(max = 256)
     private String username;
 
     @NotNull
@@ -24,5 +25,6 @@ public class SignUpDto {
     private String email;
 
     @NotBlank
+    @Size(max = 256)
     private String name;
 }

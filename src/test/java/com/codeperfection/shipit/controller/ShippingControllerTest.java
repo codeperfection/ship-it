@@ -2,7 +2,7 @@ package com.codeperfection.shipit.controller;
 
 import com.codeperfection.shipit.dto.common.PaginationFilterDto;
 import com.codeperfection.shipit.dto.shipping.CreateShippingDto;
-import com.codeperfection.shipit.exception.ErrorType;
+import com.codeperfection.shipit.exception.errordto.ErrorType;
 import com.codeperfection.shipit.service.shipping.ShippingService;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.CommonFixtureFactory;

@@ -48,8 +48,6 @@ public class User {
     private Set<Role> roles;
 
     public static User withUuid(UUID uuid) {
-        final var user = new User();
-        user.setUuid(uuid);
-        return user;
+        return User.builder().uuid(uuid).build();
     }
 }

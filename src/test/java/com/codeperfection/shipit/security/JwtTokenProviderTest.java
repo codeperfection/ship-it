@@ -10,11 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JwtTokenProviderTest {
 
-    private final String jwtSecret = "someSecret";
-
     private final long jwtExpirationMillis = 20_000;
 
-    private final JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(jwtSecret, jwtExpirationMillis);
+    private final JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(
+            new JwtProperties("someSecret", jwtExpirationMillis));
 
     @Test
     public void generateTokenWithAuthenticationReturnsValidToken() {

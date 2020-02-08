@@ -14,6 +14,7 @@ import javax.validation.constraints.Size;
 public class ChangePasswordDto {
 
     @NotBlank
+    @Size(max = 128)
     private String oldPassword;
 
     @NotNull

@@ -36,7 +36,7 @@ class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
-        String jwtToken = getJwtFromRequest(request);
+        final String jwtToken = getJwtFromRequest(request);
         if (jwtToken == null) {
             // There are endpoints in the service which don't require authentication
             filterChain.doFilter(request, response);
@@ -53,9 +53,9 @@ class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private UsernamePasswordAuthenticationToken getAuthentication(String token) {
-        Claims claims = jwtTokenProvider.getTokenClaims(token);
-        UUID userUuid = UUID.fromString(claims.getSubject());
-        AuthenticatedUser user = userDetailsService.loadUserByUuid(userUuid);
+        final Claims claims = jwtTokenProvider.getTokenClaims(token);
+        final UUID userUuid = UUID.fromString(claims.getSubject());
+        final AuthenticatedUser user = userDetailsService.loadUserByUuid(userUuid);
         if (user.getPasswordChangeDate().isAfter(claims.getIssuedAt().toInstant().atOffset(ZoneOffset.UTC))) {
             throw new JwtTokenInvalidatedException(token);
         }
@@ -64,7 +64,7 @@ class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+        final String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         final var bearerPrefix = "Bearer ";
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(bearerPrefix)) {
             return bearerToken.substring(bearerPrefix.length());

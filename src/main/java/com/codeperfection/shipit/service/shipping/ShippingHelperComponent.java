@@ -6,16 +6,16 @@ import com.codeperfection.shipit.dto.shipping.ShippedItemDto;
 import com.codeperfection.shipit.dto.shipping.ShippingDto;
 import com.codeperfection.shipit.dto.transporter.TransporterDto;
 import com.codeperfection.shipit.entity.*;
+import com.codeperfection.shipit.exception.clienterror.ShippingImpossibleException;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
 import com.codeperfection.shipit.service.shipping.placer.Item;
+import com.codeperfection.shipit.service.shipping.placer.KnapsackPlacer;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -26,12 +26,15 @@ class ShippingHelperComponent {
 
     private ShippingRepository shippingRepository;
 
+    private KnapsackPlacer knapsackPlacer;
+
     private ModelMapper modelMapper;
 
     ShippingHelperComponent(ProductRepository productRepository, ShippingRepository shippingRepository,
-                            ModelMapper modelMapper) {
+                            KnapsackPlacer knapsackPlacer, ModelMapper modelMapper) {
         this.productRepository = productRepository;
         this.shippingRepository = shippingRepository;
+        this.knapsackPlacer = knapsackPlacer;
         this.modelMapper = modelMapper;
     }
 
@@ -39,6 +42,16 @@ class ShippingHelperComponent {
         return products.stream().flatMap(product -> IntStream.range(0, product.getCountInStock())
                 .mapToObj(o -> Item.valueOf(product)))
                 .toArray(Item[]::new);
+    }
+
+    Map<Product, Long> runPlacer(Transporter transporter, List<Product> products) {
+        final var productToCount = knapsackPlacer.place(convertToItems(products), transporter.getCapacity())
+                .getItems().stream().collect(Collectors.groupingBy(Item::getProduct,
+                        () -> new TreeMap<>(Comparator.comparing(Product::getUuid)), Collectors.counting()));
+        if (productToCount.isEmpty()) {
+            throw new ShippingImpossibleException();
+        }
+        return productToCount;
     }
 
     void deductPlacedProductsFromStock(Map<Product, Long> placedProducts) {

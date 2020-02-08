@@ -58,7 +58,7 @@ public class ProductController {
     public ResponseEntity<ProductDto> updateProduct(
             @PathVariable UUID productUuid, @Valid @RequestBody UpdateProductDto updateProductDto,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        ProductDto product = productService.update(productUuid, updateProductDto, authenticatedUser);
+        final var product = productService.update(productUuid, updateProductDto, authenticatedUser);
         // Please note that location of the product changes, as new version with latest state is created
         return ResponseEntity.status(HttpStatus.OK).location(getLocation(product.getUuid())).body(product);
     }

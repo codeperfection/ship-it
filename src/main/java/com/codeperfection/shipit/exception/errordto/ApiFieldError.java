@@ -1,4 +1,4 @@
-package com.codeperfection.shipit.exception;
+package com.codeperfection.shipit.exception.errordto;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

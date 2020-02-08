@@ -67,7 +67,7 @@ public class TransporterServiceTest {
     public void getTransportersReturnsPaginatedDtos() {
         final var paginationFilterDto = new PaginationFilterDto(2, 1);
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        final var databasePage = new PageImpl<>(List.of(TransporterFixtureFactory.createTransporterDto()));
+        final var databasePage = new PageImpl<>(List.of(TransporterFixtureFactory.createTransporter()));
         doReturn(databasePage).when(transporterRepository).findByUserAndIsActiveTrue(
                 User.withUuid(authenticatedUser.getUuid()), PageRequest.of(paginationFilterDto.getPage(),
                         paginationFilterDto.getSize(), Sort.by("createdAt")));
@@ -93,14 +93,14 @@ public class TransporterServiceTest {
 
     @Test
     public void getTransporterIfFoundReturnsDto() {
-        final var transporterDto = TransporterFixtureFactory.createTransporterDto();
+        final var transporter = TransporterFixtureFactory.createTransporter();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        doReturn(Optional.of(transporterDto)).when(transporterRepository).findByUuidAndUser(transporterDto.getUuid(),
+        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(transporter.getUuid(),
                 User.withUuid(authenticatedUser.getUuid()));
 
-        final var resultTransporterDto = transporterService.getTransporter(transporterDto.getUuid(), authenticatedUser);
+        final var resultTransporterDto = transporterService.getTransporter(transporter.getUuid(), authenticatedUser);
 
-        assertThat(resultTransporterDto).isEqualTo(transporterDto);
+        assertThat(resultTransporterDto).isEqualTo(TransporterFixtureFactory.createTransporterDto());
         verifyNoMoreInteractions(transporterRepository);
     }
 }

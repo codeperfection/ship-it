@@ -9,7 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "shipped_item")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
