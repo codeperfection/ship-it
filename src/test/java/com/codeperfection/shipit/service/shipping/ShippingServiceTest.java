@@ -7,7 +7,7 @@ import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
-import com.codeperfection.shipit.repository.TransporterRepository;
+import com.codeperfection.shipit.service.CommonServiceUtil;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.ProductFixtureFactory;
 import com.codeperfection.shipit.util.ShippingFixtureFactory;
@@ -37,7 +37,7 @@ public class ShippingServiceTest {
     private ShippingHelperComponent shippingHelperComponent;
 
     @Mock
-    private TransporterRepository transporterRepository;
+    private CommonServiceUtil commonServiceUtil;
 
     @Mock
     private ProductRepository productRepository;
@@ -49,23 +49,12 @@ public class ShippingServiceTest {
     private ShippingService shippingService;
 
     @Test
-    public void createShippingIfInvalidTransporterThrowsException() {
-        final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
-        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        doReturn(Optional.empty()).when(transporterRepository).findByUuidAndUser(createShippingDto.getTransporterUuid(),
-                User.withUuid(authenticatedUser.getUuid()));
-        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> shippingService.createShipping(
-                createShippingDto, authenticatedUser));
-        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
-    }
-
-    @Test
     public void createShippingIfShippingPossibleReturnsDto() {
         final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var transporter = TransporterFixtureFactory.createTransporter();
         final var user = User.withUuid(authenticatedUser.getUuid());
-        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(
+        doReturn(transporter).when(commonServiceUtil).getTransporter(
                 createShippingDto.getTransporterUuid(), user);
 
         final var product = ProductFixtureFactory.createProduct();
@@ -82,9 +71,10 @@ public class ShippingServiceTest {
         doReturn(shippingDto).when(shippingHelperComponent).mapToDto(shipping);
 
         assertThat(shippingService.createShipping(createShippingDto, authenticatedUser)).isEqualTo(shippingDto);
+        verify(commonServiceUtil).getTransporter(transporter.getUuid(), user);
         verify(shippingHelperComponent).runPlacer(transporter, products);
         verify(shippingHelperComponent).deductPlacedProductsFromStock(placedProducts);
-        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
     }
 
     @Test
@@ -102,7 +92,7 @@ public class ShippingServiceTest {
 
         assertThat(shippingsPage).isEqualTo(new PageDto<>(databasePage.getTotalElements(),
                 databasePage.getTotalPages(), List.of(shippingDto)));
-        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
     }
 
     @Test
@@ -114,7 +104,7 @@ public class ShippingServiceTest {
 
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() ->
                 shippingService.getShipping(nonExistingUuid, authenticatedUser));
-        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
     }
 
     @Test
@@ -129,6 +119,6 @@ public class ShippingServiceTest {
         final var shippingDto = shippingService.getShipping(shipping.getUuid(), authenticatedUser);
 
         assertThat(shippingDto).isEqualTo(expectedShippingDto);
-        verifyNoMoreInteractions(shippingHelperComponent, transporterRepository, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
     }
 }

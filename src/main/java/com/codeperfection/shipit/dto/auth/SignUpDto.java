@@ -12,8 +12,7 @@ import javax.validation.constraints.*;
 public class SignUpDto {
 
     @NotNull
-    @Pattern(regexp = "^[\\p{Alnum}]{4,64}$")
-    @Size(max = 256)
+    @Pattern(regexp = "^[a-zA-Z0-9]{4,64}$")
     private String username;
 
     @NotNull

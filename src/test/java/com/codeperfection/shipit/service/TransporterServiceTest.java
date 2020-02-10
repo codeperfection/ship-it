@@ -4,7 +4,6 @@ import com.codeperfection.shipit.dto.common.PageDto;
 import com.codeperfection.shipit.dto.common.PaginationFilterDto;
 import com.codeperfection.shipit.entity.Transporter;
 import com.codeperfection.shipit.entity.User;
-import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.repository.TransporterRepository;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.TransporterFixtureFactory;
@@ -22,10 +21,9 @@ import org.springframework.data.domain.Sort;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +32,9 @@ public class TransporterServiceTest {
     @Mock
     private TransporterRepository transporterRepository;
 
+    @Mock
+    private CommonServiceUtil commonServiceUtil;
+
     @Spy
     private ModelMapper modelMapper;
 
@@ -41,14 +42,14 @@ public class TransporterServiceTest {
     private TransporterService transporterService;
 
     @Test
-    public void saveIfValidDtoSavesEntity() {
+    public void createTransporterIfValidDtoSavesEntity() {
         final var createTransporterDto = TransporterFixtureFactory.createCreateTransporterDto();
         final var transporterDto = TransporterFixtureFactory.createTransporterDto();
         final var transporter = TransporterFixtureFactory.createTransporter();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(transporter).when(transporterRepository).save(any());
 
-        final var savedTransporterDto = transporterService.save(createTransporterDto, authenticatedUser);
+        final var savedTransporterDto = transporterService.createTransporter(createTransporterDto, authenticatedUser);
 
         final var transporterArgumentCaptor = ArgumentCaptor.forClass(Transporter.class);
         verify(transporterRepository).save(transporterArgumentCaptor.capture());
@@ -60,7 +61,7 @@ public class TransporterServiceTest {
         assertThat(savedTransporter.getUser().getUuid()).isEqualTo(authenticatedUser.getUuid());
 
         assertThat(savedTransporterDto).isEqualTo(transporterDto);
-        verifyNoMoreInteractions(transporterRepository);
+        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
     }
 
     @Test
@@ -76,31 +77,19 @@ public class TransporterServiceTest {
 
         assertThat(transportersPage).isEqualTo(new PageDto<>(databasePage.getTotalElements(),
                 databasePage.getTotalPages(), List.of(TransporterFixtureFactory.createTransporterDto())));
-        verifyNoMoreInteractions(transporterRepository);
+        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
     }
 
     @Test
-    public void getTransporterIfNotFoundThrowsException() {
-        final var nonExistingUuid = UUID.fromString("bdc52538-b488-4f67-a6c4-4f4116b5174e");
-        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        doReturn(Optional.empty()).when(transporterRepository).findByUuidAndUser(nonExistingUuid,
-                User.withUuid(authenticatedUser.getUuid()));
-
-        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() ->
-                transporterService.getTransporter(nonExistingUuid, authenticatedUser));
-        verifyNoMoreInteractions(transporterRepository);
-    }
-
-    @Test
-    public void getTransporterIfFoundReturnsDto() {
+    public void getTransporterReturnsDto() {
         final var transporter = TransporterFixtureFactory.createTransporter();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(transporter.getUuid(),
+        doReturn(transporter).when(commonServiceUtil).getTransporter(transporter.getUuid(),
                 User.withUuid(authenticatedUser.getUuid()));
 
         final var resultTransporterDto = transporterService.getTransporter(transporter.getUuid(), authenticatedUser);
 
         assertThat(resultTransporterDto).isEqualTo(TransporterFixtureFactory.createTransporterDto());
-        verifyNoMoreInteractions(transporterRepository);
+        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
     }
 }

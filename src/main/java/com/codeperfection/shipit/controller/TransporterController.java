@@ -4,8 +4,10 @@ import com.codeperfection.shipit.dto.common.PageDto;
 import com.codeperfection.shipit.dto.common.PaginationFilterDto;
 import com.codeperfection.shipit.dto.transporter.CreateTransporterDto;
 import com.codeperfection.shipit.dto.transporter.TransporterDto;
+import com.codeperfection.shipit.dto.transporter.UpdateTransporterDto;
 import com.codeperfection.shipit.security.AuthenticatedUser;
 import com.codeperfection.shipit.service.TransporterService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +35,7 @@ public class TransporterController {
     public ResponseEntity<TransporterDto> createTransporter(
             @Valid @RequestBody CreateTransporterDto createTransporterDto,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        final var transporter = transporterService.save(createTransporterDto, authenticatedUser);
+        final var transporter = transporterService.createTransporter(createTransporterDto, authenticatedUser);
         return ResponseEntity.created(getLocation(transporter.getUuid())).body(transporter);
     }
 
@@ -48,6 +50,20 @@ public class TransporterController {
     public ResponseEntity<TransporterDto> getTransporter(
             @PathVariable UUID transporterUuid, @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
         return ResponseEntity.ok(transporterService.getTransporter(transporterUuid, authenticatedUser));
+    }
+
+    @PutMapping(TRANSPORTER_UUID_PATH)
+    public ResponseEntity<TransporterDto> updateTransporter(
+            @PathVariable UUID transporterUuid, @RequestBody UpdateTransporterDto updateTransporterDto,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        var transporter = transporterService.update(transporterUuid, updateTransporterDto, authenticatedUser);
+        return ResponseEntity.status(HttpStatus.OK).location(getLocation(transporter.getUuid())).body(transporter);
+    }
+
+    @DeleteMapping(TRANSPORTER_UUID_PATH)
+    public void deleteTransporter(@PathVariable UUID transporterUuid,
+                                  @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        transporterService.deleteTransporter(transporterUuid, authenticatedUser);
     }
 
     private URI getLocation(UUID transporterUuid) {

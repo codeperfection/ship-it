@@ -56,7 +56,7 @@ public class UserControllerTest extends ControllerTestBase {
                 .content(objectMapper.writeValueAsString(invalidChangePasswordDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PAYLOAD.getDisplayName())))
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
                 .andExpect(jsonPath("$.fieldErrors[*].fieldName",
                         containsInAnyOrder("oldPassword", "newPassword")));
         verifyNoInteractions(userService);

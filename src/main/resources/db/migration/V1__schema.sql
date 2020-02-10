@@ -105,7 +105,7 @@ CREATE TABLE shipped_item
 (
     uuid UUID,
 
-    count INTEGER NOT NULL,
+    shipped_count INTEGER NOT NULL,
 
     shipping_uuid UUID NOT NULL,
     product_uuid UUID NOT NULL,

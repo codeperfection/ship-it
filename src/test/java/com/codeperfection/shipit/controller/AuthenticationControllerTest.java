@@ -28,7 +28,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signInDto)))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PAYLOAD.getDisplayName())))
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
                 .andExpect(jsonPath("$.fieldErrors[*].fieldName",
                         containsInAnyOrder("usernameOrEmail", "password")));
         verifyNoInteractions(authenticationService);
@@ -55,7 +55,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signUpDto)))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PAYLOAD.getDisplayName())))
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
                 .andExpect(jsonPath("$.fieldErrors[*].fieldName",
                         containsInAnyOrder("username", "password", "email", "name")));
         verifyNoInteractions(authenticationService);

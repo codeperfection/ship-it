@@ -37,7 +37,7 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody CreateProductDto createProductDto,
                                                     @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        final var product = productService.save(createProductDto, authenticatedUser);
+        final var product = productService.createProduct(createProductDto, authenticatedUser);
         return ResponseEntity.created(getLocation(product.getUuid())).body(product);
     }
 
@@ -58,21 +58,22 @@ public class ProductController {
     public ResponseEntity<ProductDto> updateProduct(
             @PathVariable UUID productUuid, @Valid @RequestBody UpdateProductDto updateProductDto,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        final var product = productService.update(productUuid, updateProductDto, authenticatedUser);
+        final var product = productService.updateProduct(productUuid, updateProductDto, authenticatedUser);
         // Please note that location of the product changes, as new version with latest state is created
         return ResponseEntity.status(HttpStatus.OK).location(getLocation(product.getUuid())).body(product);
     }
 
     @PutMapping(PRODUCT_UUID_PATH + COUNT_IN_STOCK_PATH)
     public ResponseEntity<ProductDto> updateCountInStock(
-            @PathVariable UUID uuid, @Valid @RequestBody UpdateCountInStockDto updateCountInStockDto,
+            @PathVariable UUID productUuid, @Valid @RequestBody UpdateCountInStockDto updateCountInStockDto,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        return ResponseEntity.ok(productService.update(uuid, updateCountInStockDto, authenticatedUser));
+        return ResponseEntity.ok(productService.updateProduct(productUuid, updateCountInStockDto, authenticatedUser));
     }
 
     @DeleteMapping(PRODUCT_UUID_PATH)
-    public void deleteProduct(@PathVariable UUID productUuid, AuthenticatedUser authenticatedUser) {
-        productService.delete(productUuid, authenticatedUser);
+    public void deleteProduct(@PathVariable UUID productUuid,
+                              @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
+        productService.deleteProduct(productUuid, authenticatedUser);
     }
 
     private URI getLocation(UUID productUuid) {

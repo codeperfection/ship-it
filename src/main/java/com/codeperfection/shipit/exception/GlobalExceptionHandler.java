@@ -12,9 +12,13 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.stream.Collectors;
+
+import static com.codeperfection.shipit.exception.errordto.ErrorType.INVALID_PATH_VARIABLE;
 
 @Slf4j
 @RestControllerAdvice
@@ -31,11 +35,22 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> httpMessageNotReadableException(HttpMessageNotReadableException e) {
         log.error(e.getMessage());
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON)
-                .body(ApiError.badRequest(ErrorType.INVALID_PAYLOAD, e.getMessage()));
+                .body(ApiError.badRequest(ErrorType.INVALID_REQUEST, e.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> methodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        if (e.getParameter().getParameterAnnotation(PathVariable.class) == null) {
+            throw e;
+        }
+        log.error(e.getMessage());
+        return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(ApiError.badRequest(
+                INVALID_PATH_VARIABLE, String.format("Validation of path variable '%s' failed. Error: %s",
+                        e.getName(), e.getMessage())));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> httpMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiError> methodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error(e.getMessage());
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON)
                 .body(ApiFieldError.badRequest("Field validation failed",

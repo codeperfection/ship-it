@@ -80,7 +80,7 @@ class ShippingHelperComponent {
         return placedProducts.entrySet().stream().map(entry ->
                 ShippedItem.builder()
                         .uuid(UUID.randomUUID())
-                        .count(entry.getValue().intValue())
+                        .shippedCount(entry.getValue().intValue())
                         .product(entry.getKey())
                         .build())
                 .collect(Collectors.toList());
@@ -99,6 +99,6 @@ class ShippingHelperComponent {
 
     private ShippedItemDto mapToDto(ShippedItem shippedItem) {
         return new ShippedItemDto(shippedItem.getUuid(), modelMapper.map(shippedItem.getProduct(), ProductDto.class),
-                shippedItem.getCount());
+                shippedItem.getShippedCount());
     }
 }

@@ -8,6 +8,7 @@ import com.codeperfection.shipit.dto.product.UpdateCountInStockDto;
 import com.codeperfection.shipit.dto.product.UpdateProductDto;
 import com.codeperfection.shipit.entity.Product;
 import com.codeperfection.shipit.entity.User;
+import com.codeperfection.shipit.exception.clienterror.CannotChangeInactiveEntityException;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.security.AuthenticatedUser;
@@ -22,26 +23,28 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.codeperfection.shipit.service.ServiceUtil.applyChangeIfNeeded;
-
 @Service
 public class ProductService {
 
     private ProductRepository productRepository;
 
+    private CommonServiceUtil commonServiceUtil;
+
     private ModelMapper modelMapper;
 
-    public ProductService(ProductRepository productRepository, ModelMapper modelMapper) {
+    public ProductService(ProductRepository productRepository, CommonServiceUtil commonServiceUtil,
+                          ModelMapper modelMapper) {
         this.productRepository = productRepository;
+        this.commonServiceUtil = commonServiceUtil;
         this.modelMapper = modelMapper;
     }
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public ProductDto save(CreateProductDto createProductDto, AuthenticatedUser authenticatedUser) {
+    public ProductDto createProduct(CreateProductDto createProductDto, AuthenticatedUser authenticatedUser) {
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var product = productRepository.save(createProduct(createProductDto, user));
-        return modelMapper.map(product, ProductDto.class);
+        return mapToDto(product);
     }
 
     @Transactional(readOnly = true)
@@ -55,8 +58,7 @@ public class ProductService {
         return PageDto.<ProductDto>builder()
                 .totalPages(productsPage.getTotalPages())
                 .totalElements(productsPage.getTotalElements())
-                .elements(productsPage.stream().map(product ->
-                        modelMapper.map(product, ProductDto.class)).collect(Collectors.toList()))
+                .elements(productsPage.stream().map(this::mapToDto).collect(Collectors.toList()))
                 .build();
     }
 
@@ -64,46 +66,42 @@ public class ProductService {
     @PreAuthorize("hasRole('USER')")
     public ProductDto getProduct(UUID productUuid, AuthenticatedUser authenticatedUser) {
         final var user = User.withUuid(authenticatedUser.getUuid());
-        return modelMapper.map(getProductEntity(productUuid, user), ProductDto.class);
+        return mapToDto(getProduct(productUuid, user));
     }
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public ProductDto update(UUID productUuid, UpdateProductDto updateProductDto,
-                             AuthenticatedUser authenticatedUser) {
+    public ProductDto updateProduct(UUID productUuid, UpdateProductDto updateProductDto,
+                                    AuthenticatedUser authenticatedUser) {
         final var user = User.withUuid(authenticatedUser.getUuid());
-        final var product = getProductEntity(productUuid, user);
+        final Product currentProduct = getActiveProductForUpdate(productUuid, user);
 
-        final var newVersion = createNewVersion(product, user);
-        if (applyChanges(newVersion, updateProductDto)) {
-            productRepository.deactivate(productUuid);
-            productRepository.save(newVersion);
-            return modelMapper.map(newVersion, ProductDto.class);
+        final var newProduct = createNewVersion(currentProduct, user);
+        if (applyChanges(newProduct, updateProductDto)) {
+            removeStockAndDeactivate(currentProduct);
+            productRepository.save(newProduct);
+            return mapToDto(newProduct);
         }
 
-        return modelMapper.map(product, ProductDto.class);
+        return mapToDto(currentProduct);
     }
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public ProductDto update(UUID productUuid, UpdateCountInStockDto countInStockDto,
-                             AuthenticatedUser authenticatedUser) {
-        final var user = User.withUuid(authenticatedUser.getUuid());
-        final var product = getProductEntity(productUuid, user);
+    public ProductDto updateProduct(UUID productUuid, UpdateCountInStockDto countInStockDto,
+                                    AuthenticatedUser authenticatedUser) {
+        final var product = getActiveProductForUpdate(productUuid, User.withUuid(authenticatedUser.getUuid()));
         if (applyChanges(product, countInStockDto)) {
             productRepository.save(product);
         }
 
-        return modelMapper.map(product, ProductDto.class);
+        return mapToDto(product);
     }
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public void delete(UUID productUuid, AuthenticatedUser authenticatedUser) {
-        final var user = User.withUuid(authenticatedUser.getUuid());
-        if (productRepository.deleteByUuidAndUser(productUuid, user) == 0L) {
-            throw new EntityNotFoundException(productUuid);
-        }
+    public void deleteProduct(UUID productUuid, AuthenticatedUser authenticatedUser) {
+        deactivate(getActiveProductForUpdate(productUuid, User.withUuid(authenticatedUser.getUuid())));
     }
 
     private Product createProduct(CreateProductDto createProductDto, User user) {
@@ -119,20 +117,21 @@ public class ProductService {
                 .build();
     }
 
-    private Product getProductEntity(UUID productUuid, User user) {
+    private ProductDto mapToDto(Product product) {
+        return modelMapper.map(product, ProductDto.class);
+    }
+
+    private Product getProduct(UUID productUuid, User user) {
         return productRepository.findByUuidAndUser(productUuid, user)
                 .orElseThrow(() -> new EntityNotFoundException(productUuid));
     }
 
-    private boolean applyChanges(Product existing, UpdateProductDto updateDto) {
-        boolean changed = applyChangeIfNeeded(existing.getName(), updateDto.getName(), existing::setName);
-        changed |= applyChangeIfNeeded(existing.getPrice(), updateDto.getPrice(), existing::setPrice);
-        changed |= applyChangeIfNeeded(existing.getVolume(), updateDto.getVolume(), existing::setVolume);
-        return changed;
-    }
-
-    private boolean applyChanges(Product existing, UpdateCountInStockDto updateDto) {
-        return applyChangeIfNeeded(existing.getCountInStock(), updateDto.getCountInStock(), existing::setCountInStock);
+    private Product getActiveProductForUpdate(UUID productUuid, User user) {
+        final var product = getProduct(productUuid, user);
+        if (!product.getIsActive()) {
+            throw new CannotChangeInactiveEntityException(productUuid);
+        }
+        return product;
     }
 
     private Product createNewVersion(Product product, User user) {
@@ -146,5 +145,30 @@ public class ProductService {
                 .createdAt(OffsetDateTime.now())
                 .user(user)
                 .build();
+    }
+
+    private boolean applyChanges(Product product, UpdateProductDto updateDto) {
+        boolean changed = commonServiceUtil.applyChangeIfNeeded(
+                product.getName(), updateDto.getName(), product::setName);
+        changed |= commonServiceUtil.applyChangeIfNeeded(
+                product.getPrice(), updateDto.getPrice(), product::setPrice);
+        changed |= commonServiceUtil.applyChangeIfNeeded(
+                product.getVolume(), updateDto.getVolume(), product::setVolume);
+        return changed;
+    }
+
+    private void removeStockAndDeactivate(Product product) {
+        product.setCountInStock(0);
+        deactivate(product);
+    }
+
+    private void deactivate(Product product) {
+        product.setIsActive(false);
+        productRepository.save(product);
+    }
+
+    private boolean applyChanges(Product product, UpdateCountInStockDto updateDto) {
+        return commonServiceUtil.applyChangeIfNeeded(
+                product.getCountInStock(), updateDto.getCountInStock(), product::setCountInStock);
     }
 }

@@ -29,6 +29,6 @@ public class ApiFieldError extends ApiError {
 
     public static ApiFieldError badRequest(String message, List<FieldErrorInfo> fieldErrorInfos) {
         return new ApiFieldError(OffsetDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST.value(),
-                ErrorType.INVALID_PAYLOAD, message, fieldErrorInfos);
+                ErrorType.INVALID_REQUEST, message, fieldErrorInfos);
     }
 }

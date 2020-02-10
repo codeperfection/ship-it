@@ -14,5 +14,5 @@ public class ShippedItemDto {
 
     private ProductDto product;
 
-    private Integer count;
+    private Integer shippedCount;
 }

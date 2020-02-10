@@ -43,7 +43,7 @@ public class TransporterControllerTest extends ControllerTestBase {
                 .content(objectMapper.writeValueAsString(transporterDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PAYLOAD.getDisplayName())))
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
                 .andExpect(jsonPath("$.fieldErrors[*].fieldName",
                         containsInAnyOrder("name", "capacity")));
         verifyNoInteractions(transporterService);
@@ -55,7 +55,7 @@ public class TransporterControllerTest extends ControllerTestBase {
         final var createTransporterDto = TransporterFixtureFactory.createCreateTransporterDto();
         final var transporterDto = TransporterFixtureFactory.createTransporterDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        doReturn(transporterDto).when(transporterService).save(createTransporterDto, authenticatedUser);
+        doReturn(transporterDto).when(transporterService).createTransporter(createTransporterDto, authenticatedUser);
         mockMvc.perform(post(API_V1 + TRANSPORTERS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createTransporterDto))
@@ -64,7 +64,7 @@ public class TransporterControllerTest extends ControllerTestBase {
                 .andExpect(content().json(objectMapper.writeValueAsString(createTransporterDto)))
                 .andExpect(redirectedUrlPattern("http://*" + API_V1 + TRANSPORTERS_PATH + "/" +
                         TransporterFixtureFactory.createTransporter().getUuid()));
-        verify(transporterService).save(createTransporterDto, authenticatedUser);
+        verify(transporterService).createTransporter(createTransporterDto, authenticatedUser);
         verifyNoMoreInteractions(transporterService);
     }
 
@@ -82,7 +82,7 @@ public class TransporterControllerTest extends ControllerTestBase {
                 .params(TestUtil.toMultiValueMap(invalidPaginationFilterDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PAYLOAD.getDisplayName())))
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
                 .andExpect(jsonPath("$.fieldErrors[*].fieldName",
                         containsInAnyOrder("page", "size")));
         verifyNoInteractions(transporterService);

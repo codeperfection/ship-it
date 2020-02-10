@@ -25,7 +25,7 @@ public class ShippedItem {
     private Product product;
 
     @NotNull
-    private Integer count;
+    private Integer shippedCount;
 
     @NotNull
     @ManyToOne

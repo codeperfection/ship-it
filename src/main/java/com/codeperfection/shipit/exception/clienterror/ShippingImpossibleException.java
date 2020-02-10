@@ -7,6 +7,6 @@ public class ShippingImpossibleException extends ClientErrorException {
 
     public ShippingImpossibleException() {
         super("Impossible to create a shipping with given items in stock and transporter",
-                HttpStatus.BAD_REQUEST, ErrorType.SHIPPING_IMPOSSIBLE);
+                HttpStatus.CONFLICT, ErrorType.SHIPPING_IMPOSSIBLE);
     }
 }

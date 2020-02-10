@@ -43,7 +43,7 @@ public class ShippingControllerTest extends ControllerTestBase {
                 .content(objectMapper.writeValueAsString(createShippingDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PAYLOAD.getDisplayName())))
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
                 .andExpect(jsonPath("$.fieldErrors[*].fieldName",
                         containsInAnyOrder("name", "transporterUuid", "timeZoneName")));
         verifyNoInteractions(shippingService);
@@ -81,7 +81,7 @@ public class ShippingControllerTest extends ControllerTestBase {
                 .params(TestUtil.toMultiValueMap(invalidPaginationFilterDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PAYLOAD.getDisplayName())))
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
                 .andExpect(jsonPath("$.fieldErrors[*].fieldName",
                         containsInAnyOrder("page", "size")));
         verifyNoInteractions(shippingService);

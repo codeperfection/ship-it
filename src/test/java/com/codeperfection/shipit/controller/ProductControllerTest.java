@@ -42,7 +42,7 @@ public class ProductControllerTest extends ControllerTestBase {
                 .content(objectMapper.writeValueAsString(productDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PAYLOAD.getDisplayName())))
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
                 .andExpect(jsonPath("$.fieldErrors[*].fieldName",
                         containsInAnyOrder("name", "volume", "price", "countInStock")));
         verifyNoInteractions(productService);
@@ -54,7 +54,7 @@ public class ProductControllerTest extends ControllerTestBase {
         final var createProductDto = ProductFixtureFactory.createCreateProductDto();
         final var productDto = ProductFixtureFactory.createProductDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        doReturn(productDto).when(productService).save(createProductDto, authenticatedUser);
+        doReturn(productDto).when(productService).createProduct(createProductDto, authenticatedUser);
 
         mockMvc.perform(post(API_V1 + ProductController.PRODUCTS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -64,7 +64,7 @@ public class ProductControllerTest extends ControllerTestBase {
                 .andExpect(content().json(objectMapper.writeValueAsString(productDto)))
                 .andExpect(redirectedUrlPattern("http://*" + API_V1 + ProductController.PRODUCTS_PATH + "/" + productDto.getUuid()));
 
-        verify(productService).save(createProductDto, authenticatedUser);
+        verify(productService).createProduct(createProductDto, authenticatedUser);
         verifyNoMoreInteractions(productService);
     }
 
@@ -82,7 +82,7 @@ public class ProductControllerTest extends ControllerTestBase {
                 .params(TestUtil.toMultiValueMap(invalidPaginationFilterDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PAYLOAD.getDisplayName())))
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
                 .andExpect(jsonPath("$.fieldErrors[*].fieldName",
                         containsInAnyOrder("page", "size")));
         verifyNoInteractions(productService);

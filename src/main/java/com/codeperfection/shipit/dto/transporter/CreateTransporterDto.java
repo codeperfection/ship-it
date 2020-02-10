@@ -19,6 +19,6 @@ public class CreateTransporterDto {
     private String name;
 
     @NotNull
-    @Min(0)
+    @Min(1)
     private Integer capacity;
 }

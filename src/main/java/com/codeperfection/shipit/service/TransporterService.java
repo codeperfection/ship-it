@@ -4,9 +4,10 @@ import com.codeperfection.shipit.dto.common.PageDto;
 import com.codeperfection.shipit.dto.common.PaginationFilterDto;
 import com.codeperfection.shipit.dto.transporter.CreateTransporterDto;
 import com.codeperfection.shipit.dto.transporter.TransporterDto;
+import com.codeperfection.shipit.dto.transporter.UpdateTransporterDto;
 import com.codeperfection.shipit.entity.Transporter;
 import com.codeperfection.shipit.entity.User;
-import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
+import com.codeperfection.shipit.exception.clienterror.CannotChangeInactiveEntityException;
 import com.codeperfection.shipit.repository.TransporterRepository;
 import com.codeperfection.shipit.security.AuthenticatedUser;
 import org.modelmapper.ModelMapper;
@@ -25,53 +26,116 @@ public class TransporterService {
 
     private TransporterRepository transporterRepository;
 
+    private CommonServiceUtil commonServiceUtil;
+
     private ModelMapper modelMapper;
 
-    public TransporterService(TransporterRepository transporterRepository, ModelMapper modelMapper) {
+    public TransporterService(TransporterRepository transporterRepository, CommonServiceUtil commonServiceUtil,
+                              ModelMapper modelMapper) {
         this.transporterRepository = transporterRepository;
+        this.commonServiceUtil = commonServiceUtil;
         this.modelMapper = modelMapper;
     }
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public TransporterDto save(CreateTransporterDto createTransporterDto, AuthenticatedUser authenticatedUser) {
-        final var transporter = transporterRepository.save(createTransporter(createTransporterDto,
-                authenticatedUser.getUuid()));
-        return modelMapper.map(transporter, TransporterDto.class);
+    public TransporterDto createTransporter(CreateTransporterDto createTransporterDto, AuthenticatedUser authenticatedUser) {
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        final var transporter = transporterRepository.save(createTransporter(createTransporterDto, user));
+        return mapToDto(transporter);
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('USER')")
     public PageDto<TransporterDto> getTransporters(PaginationFilterDto paginationFilterDto,
                                                    AuthenticatedUser authenticatedUser) {
-        final var transportersPage = transporterRepository.findByUserAndIsActiveTrue(
-                User.withUuid(authenticatedUser.getUuid()), PageRequest.of(paginationFilterDto.getPage(),
-                        paginationFilterDto.getSize(), Sort.by("createdAt")));
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        final var transportersPage = transporterRepository.findByUserAndIsActiveTrue(user,
+                PageRequest.of(paginationFilterDto.getPage(), paginationFilterDto.getSize(), Sort.by("createdAt")));
 
         return PageDto.<TransporterDto>builder()
                 .totalPages(transportersPage.getTotalPages())
                 .totalElements(transportersPage.getTotalElements())
-                .elements(transportersPage.stream().map(transporter ->
-                        modelMapper.map(transporter, TransporterDto.class)).collect(Collectors.toList()))
+                .elements(transportersPage.stream().map(this::mapToDto).collect(Collectors.toList()))
                 .build();
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('USER')")
-    public TransporterDto getTransporter(UUID uuid, AuthenticatedUser authenticatedUser) {
-        final var transporter = transporterRepository.findByUuidAndUser(uuid, User.withUuid(authenticatedUser.getUuid()))
-                .orElseThrow(() -> new EntityNotFoundException(uuid));
-        return modelMapper.map(transporter, TransporterDto.class);
+    public TransporterDto getTransporter(UUID transporterUuid, AuthenticatedUser authenticatedUser) {
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        return mapToDto(commonServiceUtil.getTransporter(transporterUuid, user));
     }
 
-    private Transporter createTransporter(CreateTransporterDto createTransporterDto, UUID userUuid) {
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public TransporterDto update(UUID transporterUuid, UpdateTransporterDto updateTransporterDto,
+                                 AuthenticatedUser authenticatedUser) {
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        final var currentTransporter = getActiveTransporterForUpdate(transporterUuid, user);
+
+        final var newTransporter = createNewVersion(currentTransporter, user);
+        if (applyChanges(newTransporter, updateTransporterDto)) {
+            deactivate(currentTransporter);
+            transporterRepository.save(newTransporter);
+            return mapToDto(newTransporter);
+        }
+
+        return mapToDto(currentTransporter);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public void deleteTransporter(UUID transporterUuid, AuthenticatedUser authenticatedUser) {
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        deactivate(getActiveTransporterForUpdate(transporterUuid, user));
+    }
+
+    private Transporter createTransporter(CreateTransporterDto createTransporterDto, User user) {
         return Transporter.builder()
                 .uuid(UUID.randomUUID())
                 .name(createTransporterDto.getName())
                 .capacity(createTransporterDto.getCapacity())
                 .isActive(true)
                 .createdAt(OffsetDateTime.now())
-                .user(User.withUuid(userUuid))
+                .user(user)
                 .build();
+    }
+
+    private TransporterDto mapToDto(Transporter transporter) {
+        return modelMapper.map(transporter, TransporterDto.class);
+    }
+
+    private Transporter getActiveTransporterForUpdate(UUID transporterUuid, User user) {
+        final var transporter = commonServiceUtil.getTransporter(transporterUuid, user);
+        if (!transporter.getIsActive()) {
+            throw new CannotChangeInactiveEntityException(transporterUuid);
+        }
+        return transporter;
+    }
+
+    private Transporter createNewVersion(Transporter currentTransporter, User user) {
+        return Transporter.builder()
+                .uuid(UUID.randomUUID())
+                .name(currentTransporter.getName())
+                .capacity(currentTransporter.getCapacity())
+                .isActive(true)
+                .createdAt(OffsetDateTime.now())
+                .user(user)
+                .build();
+    }
+
+    private boolean applyChanges(Transporter transporter, UpdateTransporterDto updateDto) {
+        boolean changed = commonServiceUtil.applyChangeIfNeeded(
+                transporter.getName(), updateDto.getName(), transporter::setName);
+        changed |= commonServiceUtil.applyChangeIfNeeded(
+                transporter.getCapacity(), updateDto.getCapacity(), transporter::setCapacity);
+
+        return changed;
+    }
+
+    private void deactivate(Transporter currentTransporter) {
+        currentTransporter.setIsActive(false);
+        transporterRepository.save(currentTransporter);
     }
 }

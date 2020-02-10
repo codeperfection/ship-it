@@ -34,6 +34,9 @@ public class ProductServiceTest {
     @Mock
     private ProductRepository productRepository;
 
+    @Mock
+    private CommonServiceUtil commonServiceUtil;
+
     @Spy
     private ModelMapper modelMapper;
 
@@ -41,14 +44,14 @@ public class ProductServiceTest {
     private ProductService productService;
 
     @Test
-    public void saveIfValidDtoSavesEntity() {
+    public void createProductIfValidDtoSavesEntity() {
         final var createProductDto = ProductFixtureFactory.createCreateProductDto();
         final var productDto = ProductFixtureFactory.createProductDto();
         final var product = ProductFixtureFactory.createProduct();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(product).when(productRepository).save(any());
 
-        final var savedProductDto = productService.save(createProductDto, authenticatedUser);
+        final var savedProductDto = productService.createProduct(createProductDto, authenticatedUser);
 
         final var productArgumentCaptor = ArgumentCaptor.forClass(Product.class);
         verify(productRepository).save(productArgumentCaptor.capture());
@@ -60,7 +63,7 @@ public class ProductServiceTest {
         assertThat(savedProduct.getUser().getUuid()).isEqualTo(authenticatedUser.getUuid());
 
         assertThat(savedProductDto).isEqualTo(productDto);
-        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productRepository, commonServiceUtil);
     }
 
     @Test
@@ -76,7 +79,7 @@ public class ProductServiceTest {
 
         assertThat(productsPage).isEqualTo(new PageDto<>(databasePage.getTotalElements(),
                 databasePage.getTotalPages(), List.of(ProductFixtureFactory.createProductDto())));
-        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productRepository, commonServiceUtil);
     }
 
     @Test
@@ -88,7 +91,7 @@ public class ProductServiceTest {
 
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() ->
                 productService.getProduct(nonExistingUuid, authenticatedUser));
-        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productRepository, commonServiceUtil);
     }
 
     @Test
@@ -101,6 +104,6 @@ public class ProductServiceTest {
         final var productDto = productService.getProduct(product.getUuid(), authenticatedUser);
 
         assertThat(productDto).isEqualTo(ProductFixtureFactory.createProductDto());
-        verifyNoMoreInteractions(productRepository);
+        verifyNoMoreInteractions(productRepository, commonServiceUtil);
     }
 }
