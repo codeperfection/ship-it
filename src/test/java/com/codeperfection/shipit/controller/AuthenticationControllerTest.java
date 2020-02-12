@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 
+import static com.codeperfection.shipit.controller.AuthenticationController.SIGN_IN_PATH;
+import static com.codeperfection.shipit.controller.AuthenticationController.SIGN_UP_PATH;
 import static com.codeperfection.shipit.controller.CommonPathValues.API_V1;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -24,7 +26,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
     @Test
     public void signInIfInvalidPayloadReturnsError() throws Exception {
         final var signInDto = new SignInDto("", "");
-        mockMvc.perform(post(API_V1 + AuthenticationController.SIGN_IN_PATH)
+        mockMvc.perform(post(API_V1 + SIGN_IN_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signInDto)))
                 .andExpect(status().is4xxClientError())
@@ -39,7 +41,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
         final var signInDto = AuthenticationFixtureFactory.createSignInDto();
         final var jwtResponseDto = AuthenticationFixtureFactory.createJwtResponseDto();
         doReturn(jwtResponseDto).when(authenticationService).generateJwtToken(signInDto);
-        mockMvc.perform(post(API_V1 + AuthenticationController.SIGN_IN_PATH)
+        mockMvc.perform(post(API_V1 + SIGN_IN_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signInDto)))
                 .andExpect(status().is2xxSuccessful())
@@ -51,7 +53,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
     @Test
     public void signUpIfInvalidPayloadReturnsError() throws Exception {
         final var signUpDto = new SignUpDto("!@#", "p", "invalidEmail", "");
-        mockMvc.perform(post(API_V1 + AuthenticationController.SIGN_UP_PATH)
+        mockMvc.perform(post(API_V1 + SIGN_UP_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signUpDto)))
                 .andExpect(status().is4xxClientError())
@@ -66,7 +68,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
         final var signUpDto = AuthenticationFixtureFactory.createSignUpDto();
         final var userDto = AuthenticationFixtureFactory.createUserDto();
         doReturn(userDto).when(authenticationService).signUpUser(signUpDto);
-        mockMvc.perform(post(API_V1 + AuthenticationController.SIGN_UP_PATH)
+        mockMvc.perform(post(API_V1 + SIGN_UP_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signUpDto)))
                 .andExpect(status().is2xxSuccessful())

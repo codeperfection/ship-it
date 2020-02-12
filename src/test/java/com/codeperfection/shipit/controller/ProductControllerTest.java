@@ -1,7 +1,10 @@
 package com.codeperfection.shipit.controller;
 
 import com.codeperfection.shipit.dto.common.PaginationFilterDto;
+import com.codeperfection.shipit.dto.product.CreateProductDto;
 import com.codeperfection.shipit.dto.product.ProductDto;
+import com.codeperfection.shipit.dto.product.UpdateCountInStockDto;
+import com.codeperfection.shipit.dto.product.UpdateProductDto;
 import com.codeperfection.shipit.exception.errordto.ErrorType;
 import com.codeperfection.shipit.service.ProductService;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
@@ -16,11 +19,12 @@ import org.springframework.http.MediaType;
 import java.util.UUID;
 
 import static com.codeperfection.shipit.controller.CommonPathValues.API_V1;
+import static com.codeperfection.shipit.controller.ProductController.COUNT_IN_STOCK_PATH;
+import static com.codeperfection.shipit.controller.ProductController.PRODUCTS_PATH;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class ProductControllerTest extends ControllerTestBase {
@@ -30,16 +34,17 @@ public class ProductControllerTest extends ControllerTestBase {
 
     @Test
     public void createProductIfNotAuthenticatedReturnsError() throws Exception {
-        checkUnauthorizedResponse(post(API_V1 + ProductController.PRODUCTS_PATH));
+        checkUnauthorizedResponse(post(API_V1 + PRODUCTS_PATH));
+        verifyNoMoreInteractions(productService);
     }
 
     @Test
     public void createProductIfInvalidPayloadReturnsError() throws Exception {
         mockAuthentication();
-        final var productDto = new ProductDto(null, "", 0, 0, -1);
-        mockMvc.perform(post(API_V1 + ProductController.PRODUCTS_PATH)
+        final var createProductDto = new CreateProductDto("", 0, 0, -1);
+        mockMvc.perform(post(API_V1 + PRODUCTS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(productDto))
+                .content(objectMapper.writeValueAsString(createProductDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
@@ -56,13 +61,13 @@ public class ProductControllerTest extends ControllerTestBase {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(productDto).when(productService).createProduct(createProductDto, authenticatedUser);
 
-        mockMvc.perform(post(API_V1 + ProductController.PRODUCTS_PATH)
+        mockMvc.perform(post(API_V1 + PRODUCTS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(productDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(productDto)))
-                .andExpect(redirectedUrlPattern("http://*" + API_V1 + ProductController.PRODUCTS_PATH + "/" + productDto.getUuid()));
+                .andExpect(redirectedUrlPattern("http://*" + API_V1 + PRODUCTS_PATH + "/" + productDto.getUuid()));
 
         verify(productService).createProduct(createProductDto, authenticatedUser);
         verifyNoMoreInteractions(productService);
@@ -70,14 +75,15 @@ public class ProductControllerTest extends ControllerTestBase {
 
     @Test
     public void getProductsIfNotAuthenticatedReturnsError() throws Exception {
-        checkUnauthorizedResponse(get(API_V1 + ProductController.PRODUCTS_PATH));
+        checkUnauthorizedResponse(get(API_V1 + PRODUCTS_PATH));
+        verifyNoMoreInteractions(productService);
     }
 
     @Test
     public void getProductsIfInvalidPaginationReturnsError() throws Exception {
         mockAuthentication();
         final var invalidPaginationFilterDto = new PaginationFilterDto(-1, 0);
-        mockMvc.perform(get(API_V1 + ProductController.PRODUCTS_PATH)
+        mockMvc.perform(get(API_V1 + PRODUCTS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .params(TestUtil.toMultiValueMap(invalidPaginationFilterDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
@@ -95,7 +101,7 @@ public class ProductControllerTest extends ControllerTestBase {
         final var productDto = ProductFixtureFactory.createProductDto();
         final var pageDto = CommonFixtureFactory.createPageDto(productDto);
         doReturn(pageDto).when(productService).getProducts(paginationFilterDto, authenticatedUser);
-        mockMvc.perform(get(API_V1 + ProductController.PRODUCTS_PATH)
+        mockMvc.perform(get(API_V1 + PRODUCTS_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .params(TestUtil.toMultiValueMap(paginationFilterDto))
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
@@ -107,22 +113,162 @@ public class ProductControllerTest extends ControllerTestBase {
 
     @Test
     public void getProductIfNotAuthenticatedReturnsError() throws Exception {
-        final var invalidUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
-        checkUnauthorizedResponse(get(API_V1 + ProductController.PRODUCTS_PATH + "/" + invalidUuid));
+        final var productUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(get(API_V1 + PRODUCTS_PATH + "/" + productUuid));
+        verifyNoMoreInteractions(productService);
     }
 
     @Test
-    public void getProductsIfValidUuidReturnsDto() throws Exception {
+    public void getProductIfInvalidPathVariableReturnsError() throws Exception {
+        checkBadRequestResponseOnInvalidPathVariable(get(API_V1 + PRODUCTS_PATH + "/" +
+                "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void getProductIfValidUuidReturnsDto() throws Exception {
         mockAuthentication();
         final var productDto = ProductFixtureFactory.createProductDto();
         doReturn(productDto).when(productService).getProduct(productDto.getUuid(), authenticatedUser);
-        mockMvc.perform(get(API_V1 + ProductController.PRODUCTS_PATH + "/" + productDto.getUuid())
+        mockMvc.perform(get(API_V1 + PRODUCTS_PATH + "/" + productDto.getUuid())
                 .contentType(MediaType.APPLICATION_JSON)
                 .param("uuid", productDto.getUuid().toString())
                 .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(productDto)));
         verify(productService).getProduct(productDto.getUuid(), authenticatedUser);
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void updateProductIfNotAuthenticatedReturnsError() throws Exception {
+        final var productUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(put(API_V1 + PRODUCTS_PATH + "/" + productUuid));
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void updateProductIfInvalidPathVariableReturnsError() throws Exception {
+        checkBadRequestResponseOnInvalidPathVariable(put(API_V1 + PRODUCTS_PATH + "/" +
+                "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void updateProductIfInvalidPayloadReturnsError() throws Exception {
+        mockAuthentication();
+        final var productUuid = UUID.randomUUID();
+        final var updateProductDto = new UpdateProductDto("", -1, -1);
+
+        mockMvc.perform(put(API_V1 + PRODUCTS_PATH + "/" + productUuid.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProductDto))
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
+                .andExpect(jsonPath("$.fieldErrors[*].fieldName",
+                        containsInAnyOrder("name", "volume", "price")));
+
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void updateProductIfValidPayloadReturnsDto() throws Exception {
+        mockAuthentication();
+        final var productUuid = UUID.randomUUID();
+        final var updateProductDto = new UpdateProductDto("a", 1, 1);
+        final var productDto = new ProductDto(UUID.randomUUID(), updateProductDto.getName(),
+                updateProductDto.getVolume(), updateProductDto.getPrice(), 5);
+        doReturn(productDto).when(productService).updateProduct(productUuid, updateProductDto, authenticatedUser);
+
+        mockMvc.perform(put(API_V1 + PRODUCTS_PATH + "/" + productUuid.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateProductDto))
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().json(objectMapper.writeValueAsString(productDto)))
+                .andExpect(redirectedUrlPattern("http://*" + API_V1 + PRODUCTS_PATH + "/" + productDto.getUuid()));
+
+        verify(productService).updateProduct(productUuid, updateProductDto, authenticatedUser);
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void updateCountInStockIfNotAuthenticatedReturnsError() throws Exception {
+        final var productUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(put(API_V1 + PRODUCTS_PATH + "/" + productUuid + COUNT_IN_STOCK_PATH));
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void updateCountInStockIfInvalidPathVariableReturnsError() throws Exception {
+        checkBadRequestResponseOnInvalidPathVariable(put(API_V1 + PRODUCTS_PATH + "/" +
+                "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378" + COUNT_IN_STOCK_PATH));
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void updateCountInStockIfInvalidPayloadReturnsError() throws Exception {
+        mockAuthentication();
+        final var productUuid = UUID.randomUUID();
+        final var updateCountInStockDto = new UpdateCountInStockDto(-1);
+
+        mockMvc.perform(put(API_V1 + PRODUCTS_PATH + "/" + productUuid.toString() + COUNT_IN_STOCK_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateCountInStockDto))
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
+                .andExpect(jsonPath("$.fieldErrors[*].fieldName",
+                        containsInAnyOrder("countInStock")));
+
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void updateCountInStockIfValidPayloadReturnsDto() throws Exception {
+        mockAuthentication();
+        final var productUuid = UUID.randomUUID();
+        final var updateCountInStockDto = new UpdateCountInStockDto(3);
+        final var productDto = new ProductDto(productUuid, "name", 1, 1,
+                updateCountInStockDto.getCountInStock());
+        doReturn(productDto).when(productService).updateProduct(productUuid, updateCountInStockDto, authenticatedUser);
+
+        mockMvc.perform(put(API_V1 + PRODUCTS_PATH + "/" + productUuid.toString() + COUNT_IN_STOCK_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateCountInStockDto))
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().json(objectMapper.writeValueAsString(productDto)));
+
+        verify(productService).updateProduct(productUuid, updateCountInStockDto, authenticatedUser);
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void deleteProductIfNotAuthenticatedReturnsError() throws Exception {
+        final var productUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(delete(API_V1 + PRODUCTS_PATH + "/" + productUuid + COUNT_IN_STOCK_PATH));
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void deleteProductIfInvalidPathVariableReturnsError() throws Exception {
+        checkBadRequestResponseOnInvalidPathVariable(delete(API_V1 + PRODUCTS_PATH + "/" +
+                "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    public void deleteProductReturnsSuccessfulStatus() throws Exception {
+        mockAuthentication();
+        final var productUuid = UUID.randomUUID();
+        mockMvc.perform(delete(API_V1 + PRODUCTS_PATH + "/" + productUuid.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is2xxSuccessful());
+
+        verify(productService).deleteProduct(productUuid, authenticatedUser);
         verifyNoMoreInteractions(productService);
     }
 }

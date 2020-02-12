@@ -20,8 +20,7 @@ import static com.codeperfection.shipit.controller.ShippingController.SHIPPINGS_
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class ShippingControllerTest extends ControllerTestBase {
@@ -32,6 +31,7 @@ public class ShippingControllerTest extends ControllerTestBase {
     @Test
     public void createShippingIfNotAuthenticatedReturnsError() throws Exception {
         checkUnauthorizedResponse(post(API_V1 + SHIPPINGS_PATH));
+        verifyNoMoreInteractions(shippingService);
     }
 
     @Test
@@ -70,6 +70,7 @@ public class ShippingControllerTest extends ControllerTestBase {
     @Test
     public void getShippingsIfNotAuthenticatedReturnsError() throws Exception {
         checkUnauthorizedResponse(get(API_V1 + SHIPPINGS_PATH));
+        verifyNoMoreInteractions(shippingService);
     }
 
     @Test
@@ -106,12 +107,20 @@ public class ShippingControllerTest extends ControllerTestBase {
 
     @Test
     public void getShippingIfNotAuthenticatedReturnsError() throws Exception {
-        final var invalidUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
-        checkUnauthorizedResponse(get(API_V1 + SHIPPINGS_PATH + "/" + invalidUuid));
+        final var shippingUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(get(API_V1 + SHIPPINGS_PATH + "/" + shippingUuid));
+        verifyNoMoreInteractions(shippingService);
     }
 
     @Test
-    public void getShippingsIfValidUuidReturnsDto() throws Exception {
+    public void getShippingIfInvalidPathVariableReturnsError() throws Exception {
+        checkBadRequestResponseOnInvalidPathVariable(get(API_V1 + SHIPPINGS_PATH + "/" +
+                "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
+        verifyNoMoreInteractions(shippingService);
+    }
+
+    @Test
+    public void getShippingIfValidUuidReturnsDto() throws Exception {
         mockAuthentication();
         final var shippingDto = ShippingFixtureFactory.createShippingDto();
         doReturn(shippingDto).when(shippingService).getShipping(shippingDto.getUuid(), authenticatedUser);
@@ -122,6 +131,33 @@ public class ShippingControllerTest extends ControllerTestBase {
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(shippingDto)));
         verify(shippingService).getShipping(shippingDto.getUuid(), authenticatedUser);
+        verifyNoMoreInteractions(shippingService);
+    }
+
+    @Test
+    public void deleteShippingIfNotAuthenticatedReturnsError() throws Exception {
+        final var shippingUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(delete(API_V1 + SHIPPINGS_PATH + "/" + shippingUuid));
+        verifyNoMoreInteractions(shippingService);
+    }
+
+    @Test
+    public void deleteShippingIfInvalidPathVariableReturnsError() throws Exception {
+        final var shippingUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(get(API_V1 + SHIPPINGS_PATH + "/" + shippingUuid));
+        verifyNoMoreInteractions(shippingService);
+    }
+
+    @Test
+    public void deleteShippingReturnsSuccessfulStatus() throws Exception {
+        mockAuthentication();
+        final var shippingUuid = UUID.randomUUID();
+        mockMvc.perform(delete(API_V1 + SHIPPINGS_PATH + "/" + shippingUuid.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is2xxSuccessful());
+
+        verify(shippingService).deleteShipping(shippingUuid, authenticatedUser);
         verifyNoMoreInteractions(shippingService);
     }
 }

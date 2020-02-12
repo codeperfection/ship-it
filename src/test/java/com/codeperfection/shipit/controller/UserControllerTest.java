@@ -26,6 +26,7 @@ public class UserControllerTest extends ControllerTestBase {
     @Test
     public void getCurrentUserIfNotAuthenticatedReturnsError() throws Exception {
         checkUnauthorizedResponse(get(API_V1 + USERS_PATH + ME_PATH));
+        verifyNoMoreInteractions(userService);
     }
 
     @Test
@@ -45,6 +46,7 @@ public class UserControllerTest extends ControllerTestBase {
     @Test
     public void changePasswordIfNotAuthenticatedReturnsError() throws Exception {
         checkUnauthorizedResponse(get(API_V1 + USERS_PATH + ME_PATH + PASSWORD_PATH));
+        verifyNoMoreInteractions(userService);
     }
 
     @Test

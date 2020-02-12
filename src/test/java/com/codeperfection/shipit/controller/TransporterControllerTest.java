@@ -2,6 +2,7 @@ package com.codeperfection.shipit.controller;
 
 import com.codeperfection.shipit.dto.common.PaginationFilterDto;
 import com.codeperfection.shipit.dto.transporter.TransporterDto;
+import com.codeperfection.shipit.dto.transporter.UpdateTransporterDto;
 import com.codeperfection.shipit.exception.errordto.ErrorType;
 import com.codeperfection.shipit.service.TransporterService;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
@@ -20,8 +21,7 @@ import static com.codeperfection.shipit.controller.TransporterController.TRANSPO
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class TransporterControllerTest extends ControllerTestBase {
@@ -32,6 +32,7 @@ public class TransporterControllerTest extends ControllerTestBase {
     @Test
     public void createTransporterIfNotAuthenticatedReturnsError() throws Exception {
         checkUnauthorizedResponse(post(API_V1 + TRANSPORTERS_PATH));
+        verifyNoInteractions(transporterService);
     }
 
     @Test
@@ -71,6 +72,7 @@ public class TransporterControllerTest extends ControllerTestBase {
     @Test
     public void getTransportersIfNotAuthenticatedReturnsError() throws Exception {
         checkUnauthorizedResponse(get(API_V1 + TRANSPORTERS_PATH));
+        verifyNoInteractions(transporterService);
     }
 
     @Test
@@ -107,12 +109,20 @@ public class TransporterControllerTest extends ControllerTestBase {
 
     @Test
     public void getTransporterIfNotAuthenticatedReturnsError() throws Exception {
-        final var invalidUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
-        checkUnauthorizedResponse(get(API_V1 + TRANSPORTERS_PATH + "/" + invalidUuid));
+        final var transporterUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(get(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid));
+        verifyNoInteractions(transporterService);
     }
 
     @Test
-    public void getTransportersIfValidUuidReturnsDto() throws Exception {
+    public void getTransporterIfInvalidPathVariableReturnsError() throws Exception {
+        checkBadRequestResponseOnInvalidPathVariable(get(API_V1 + TRANSPORTERS_PATH + "/" +
+                "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
+        verifyNoMoreInteractions(transporterService);
+    }
+
+    @Test
+    public void getTransporterIfValidUuidReturnsDto() throws Exception {
         mockAuthentication();
         final var transporterDto = TransporterFixtureFactory.createTransporterDto();
         doReturn(transporterDto).when(transporterService).getTransporter(transporterDto.getUuid(), authenticatedUser);
@@ -123,6 +133,88 @@ public class TransporterControllerTest extends ControllerTestBase {
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(transporterDto)));
         verify(transporterService).getTransporter(transporterDto.getUuid(), authenticatedUser);
+        verifyNoMoreInteractions(transporterService);
+    }
+
+    @Test
+    public void updateTransporterIfNotAuthenticatedReturnsError() throws Exception {
+        final var transporterUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(put(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid));
+        verifyNoInteractions(transporterService);
+    }
+
+    @Test
+    public void updateTransporterIfInvalidPathVariableReturnsError() throws Exception {
+        checkBadRequestResponseOnInvalidPathVariable(put(API_V1 + TRANSPORTERS_PATH + "/" +
+                "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
+        verifyNoMoreInteractions(transporterService);
+    }
+
+    @Test
+    public void updateTransporterIfInvalidPayloadReturnsError() throws Exception {
+        mockAuthentication();
+        final var transporterUuid = UUID.randomUUID();
+        final var updateTransporterDto = new UpdateTransporterDto("", -1);
+
+        mockMvc.perform(put(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateTransporterDto))
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_REQUEST.getDisplayName())))
+                .andExpect(jsonPath("$.fieldErrors[*].fieldName",
+                        containsInAnyOrder("name", "capacity")));
+
+        verifyNoMoreInteractions(transporterService);
+    }
+
+    @Test
+    public void updateTransporterIfValidPayloadReturnsDto() throws Exception {
+        mockAuthentication();
+        final var transporterUuid = UUID.randomUUID();
+        final var updateTransporterDto = new UpdateTransporterDto("a", 1);
+        final var transporterDto = new TransporterDto(UUID.randomUUID(), updateTransporterDto.getName(),
+                updateTransporterDto.getCapacity());
+        doReturn(transporterDto).when(transporterService)
+                .updateTransporter(transporterUuid, updateTransporterDto, authenticatedUser);
+
+        mockMvc.perform(put(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateTransporterDto))
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(content().json(objectMapper.writeValueAsString(transporterDto)))
+                .andExpect(redirectedUrlPattern(
+                        "http://*" + API_V1 + TRANSPORTERS_PATH + "/" + transporterDto.getUuid()));
+
+        verify(transporterService).updateTransporter(transporterUuid, updateTransporterDto, authenticatedUser);
+        verifyNoMoreInteractions(transporterService);
+    }
+
+    @Test
+    public void deleteTransporterIfNotAuthenticatedReturnsError() throws Exception {
+        final var transporterUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
+        checkUnauthorizedResponse(delete(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid));
+        verifyNoInteractions(transporterService);
+    }
+
+    @Test
+    public void deleteTransporterIfInvalidPathVariableReturnsError() throws Exception {
+        checkBadRequestResponseOnInvalidPathVariable(delete(API_V1 + TRANSPORTERS_PATH + "/" +
+                "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
+        verifyNoMoreInteractions(transporterService);
+    }
+
+    @Test
+    public void deleteTransporterReturnsSuccessfulStatus() throws Exception {
+        mockAuthentication();
+        final var transporterUuid = UUID.randomUUID();
+        mockMvc.perform(delete(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is2xxSuccessful());
+
+        verify(transporterService).deleteTransporter(transporterUuid, authenticatedUser);
         verifyNoMoreInteractions(transporterService);
     }
 }

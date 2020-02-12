@@ -15,8 +15,10 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
 
+import static com.codeperfection.shipit.controller.CommonPathValues.API_V1;
+
 @RestController
-@RequestMapping(CommonPathValues.API_V1 + ShippingController.SHIPPINGS_PATH)
+@RequestMapping(API_V1 + ShippingController.SHIPPINGS_PATH)
 public class ShippingController {
 
     static final String SHIPPINGS_PATH = "/shippings";
@@ -56,7 +58,8 @@ public class ShippingController {
     }
 
     private URI getLocation(UUID shippingUuid) {
-        return ServletUriComponentsBuilder.fromCurrentRequest().path(SHIPPING_UUID_PATH)
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path(API_V1 + SHIPPINGS_PATH + SHIPPING_UUID_PATH)
                 .buildAndExpand(shippingUuid).toUri();
     }
 }

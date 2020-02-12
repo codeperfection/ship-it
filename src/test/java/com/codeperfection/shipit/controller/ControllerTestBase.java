@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -61,5 +62,13 @@ public class ControllerTestBase {
         mockMvc.perform(builder.contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.errorType", is(ErrorType.UNAUTHORIZED.getDisplayName())));
+    }
+
+    public void checkBadRequestResponseOnInvalidPathVariable(MockHttpServletRequestBuilder builder) throws Exception {
+        mockAuthentication();
+        mockMvc.perform(builder
+                .header(HttpHeaders.AUTHORIZATION, getJwtMockAuthorization()))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.errorType", is(ErrorType.INVALID_PATH_VARIABLE.getDisplayName())));
     }
 }

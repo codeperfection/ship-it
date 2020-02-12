@@ -69,8 +69,8 @@ public class TransporterService {
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public TransporterDto update(UUID transporterUuid, UpdateTransporterDto updateTransporterDto,
-                                 AuthenticatedUser authenticatedUser) {
+    public TransporterDto updateTransporter(UUID transporterUuid, UpdateTransporterDto updateTransporterDto,
+                                            AuthenticatedUser authenticatedUser) {
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var currentTransporter = getActiveTransporterForUpdate(transporterUuid, user);
 

@@ -17,8 +17,10 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
 
+import static com.codeperfection.shipit.controller.CommonPathValues.API_V1;
+
 @RestController
-@RequestMapping(CommonPathValues.API_V1 + TransporterController.TRANSPORTERS_PATH)
+@RequestMapping(API_V1 + TransporterController.TRANSPORTERS_PATH)
 public class TransporterController {
 
     static final String TRANSPORTERS_PATH = "/transporters";
@@ -54,9 +56,9 @@ public class TransporterController {
 
     @PutMapping(TRANSPORTER_UUID_PATH)
     public ResponseEntity<TransporterDto> updateTransporter(
-            @PathVariable UUID transporterUuid, @RequestBody UpdateTransporterDto updateTransporterDto,
+            @PathVariable UUID transporterUuid, @Valid @RequestBody UpdateTransporterDto updateTransporterDto,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        var transporter = transporterService.update(transporterUuid, updateTransporterDto, authenticatedUser);
+        var transporter = transporterService.updateTransporter(transporterUuid, updateTransporterDto, authenticatedUser);
         return ResponseEntity.status(HttpStatus.OK).location(getLocation(transporter.getUuid())).body(transporter);
     }
 
@@ -67,7 +69,8 @@ public class TransporterController {
     }
 
     private URI getLocation(UUID transporterUuid) {
-        return ServletUriComponentsBuilder.fromCurrentRequest().path(TRANSPORTER_UUID_PATH)
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path(API_V1 + TRANSPORTERS_PATH + TRANSPORTER_UUID_PATH)
                 .buildAndExpand(transporterUuid).toUri();
     }
 }
