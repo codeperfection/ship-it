@@ -5,6 +5,7 @@ import com.codeperfection.shipit.dto.common.PaginationFilterDto;
 import com.codeperfection.shipit.entity.Product;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
+import com.codeperfection.shipit.exception.clienterror.ShippingInactiveTransporterException;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
 import com.codeperfection.shipit.service.CommonServiceUtil;
@@ -47,6 +48,23 @@ public class ShippingServiceTest {
 
     @InjectMocks
     private ShippingService shippingService;
+
+    @Test
+    public void createShippingIfTransporterNotActiveThrowsException() {
+        final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
+        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
+        final var transporter = TransporterFixtureFactory.createTransporter();
+        transporter.setIsActive(false);
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        doReturn(transporter).when(commonServiceUtil).getTransporter(
+                createShippingDto.getTransporterUuid(), user);
+
+        assertThatExceptionOfType(ShippingInactiveTransporterException.class).isThrownBy(() ->
+                shippingService.createShipping(createShippingDto, authenticatedUser));
+
+        verify(commonServiceUtil).getTransporter(transporter.getUuid(), user);
+        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+    }
 
     @Test
     public void createShippingIfShippingPossibleReturnsDto() {
@@ -119,6 +137,35 @@ public class ShippingServiceTest {
         final var shippingDto = shippingService.getShipping(shipping.getUuid(), authenticatedUser);
 
         assertThat(shippingDto).isEqualTo(expectedShippingDto);
+        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+    }
+
+    @Test
+    public void deleteShippingIfNotFoundThrowsException() {
+        final var nonExistingUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
+        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        doReturn(Optional.empty()).when(shippingRepository).findByUuidAndUser(nonExistingUuid, user);
+
+        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> shippingService
+                .deleteShipping(nonExistingUuid, authenticatedUser));
+
+        verify(shippingRepository).findByUuidAndUser(nonExistingUuid, user);
+        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+    }
+
+    @Test
+    public void deleteShippingIfFoundDependenciesCalled() {
+        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        final var shipping = ShippingFixtureFactory.createShipping();
+        final var shippingUuid = shipping.getUuid();
+        doReturn(Optional.of(shipping)).when(shippingRepository).findByUuidAndUser(shippingUuid, user);
+
+        shippingService.deleteShipping(shippingUuid, authenticatedUser);
+
+        verify(shippingRepository).findByUuidAndUser(shippingUuid, user);
+        verify(shippingRepository).delete(shipping);
         verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
     }
 }

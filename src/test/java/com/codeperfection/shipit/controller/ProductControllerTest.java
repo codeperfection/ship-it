@@ -232,7 +232,8 @@ public class ProductControllerTest extends ControllerTestBase {
         final var updateCountInStockDto = new UpdateCountInStockDto(3);
         final var productDto = new ProductDto(productUuid, "name", 1, 1,
                 updateCountInStockDto.getCountInStock());
-        doReturn(productDto).when(productService).updateProduct(productUuid, updateCountInStockDto, authenticatedUser);
+        doReturn(productDto).when(productService).updateCountInStock(
+                productUuid, updateCountInStockDto, authenticatedUser);
 
         mockMvc.perform(put(API_V1 + PRODUCTS_PATH + "/" + productUuid.toString() + COUNT_IN_STOCK_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -241,7 +242,7 @@ public class ProductControllerTest extends ControllerTestBase {
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().json(objectMapper.writeValueAsString(productDto)));
 
-        verify(productService).updateProduct(productUuid, updateCountInStockDto, authenticatedUser);
+        verify(productService).updateCountInStock(productUuid, updateCountInStockDto, authenticatedUser);
         verifyNoMoreInteractions(productService);
     }
 

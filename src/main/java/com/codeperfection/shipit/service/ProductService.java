@@ -88,8 +88,8 @@ public class ProductService {
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public ProductDto updateProduct(UUID productUuid, UpdateCountInStockDto countInStockDto,
-                                    AuthenticatedUser authenticatedUser) {
+    public ProductDto updateCountInStock(UUID productUuid, UpdateCountInStockDto countInStockDto,
+                                         AuthenticatedUser authenticatedUser) {
         final var product = getActiveProductForUpdate(productUuid, User.withUuid(authenticatedUser.getUuid()));
         if (applyChanges(product, countInStockDto)) {
             productRepository.save(product);

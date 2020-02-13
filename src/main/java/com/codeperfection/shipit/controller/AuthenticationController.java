@@ -34,7 +34,7 @@ public class AuthenticationController {
 
     @PostMapping(SIGN_UP_PATH)
     public ResponseEntity<UserDto> signUp(@Valid @RequestBody SignUpDto signUpDto) {
-        UserDto userDto = authenticationService.signUpUser(signUpDto);
+        final var userDto = authenticationService.signUpUser(signUpDto);
         return ResponseEntity.ok(userDto);
     }
 }

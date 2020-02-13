@@ -1,13 +1,13 @@
 package com.codeperfection.shipit.exception.errordto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-@Data
+@Getter
 @AllArgsConstructor
 public class ApiError {
 

@@ -58,7 +58,8 @@ public class TransporterController {
     public ResponseEntity<TransporterDto> updateTransporter(
             @PathVariable UUID transporterUuid, @Valid @RequestBody UpdateTransporterDto updateTransporterDto,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        var transporter = transporterService.updateTransporter(transporterUuid, updateTransporterDto, authenticatedUser);
+        final var transporter = transporterService.updateTransporter(
+                transporterUuid, updateTransporterDto, authenticatedUser);
         return ResponseEntity.status(HttpStatus.OK).location(getLocation(transporter.getUuid())).body(transporter);
     }
 

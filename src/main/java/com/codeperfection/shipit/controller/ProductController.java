@@ -69,7 +69,8 @@ public class ProductController {
     public ResponseEntity<ProductDto> updateCountInStock(
             @PathVariable UUID productUuid, @Valid @RequestBody UpdateCountInStockDto updateCountInStockDto,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser) {
-        return ResponseEntity.ok(productService.updateProduct(productUuid, updateCountInStockDto, authenticatedUser));
+        return ResponseEntity.ok(productService.updateCountInStock(
+                productUuid, updateCountInStockDto, authenticatedUser));
     }
 
     @DeleteMapping(PRODUCT_UUID_PATH)
