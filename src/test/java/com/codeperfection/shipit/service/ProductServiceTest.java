@@ -37,9 +37,6 @@ public class ProductServiceTest {
     @Mock
     private ProductRepository productRepository;
 
-    @Mock
-    private CommonServiceUtil commonServiceUtil;
-
     @Spy
     private ModelMapper modelMapper;
 
@@ -66,7 +63,7 @@ public class ProductServiceTest {
         assertThat(savedProduct.getUser().getUuid()).isEqualTo(authenticatedUser.getUuid());
 
         assertThat(savedProductDto).isEqualTo(productDto);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -82,7 +79,7 @@ public class ProductServiceTest {
 
         assertThat(productsPage).isEqualTo(new PageDto<>(databasePage.getTotalElements(),
                 databasePage.getTotalPages(), List.of(ProductFixtureFactory.createProductDto())));
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -96,7 +93,7 @@ public class ProductServiceTest {
                 .getProduct(nonExistingUuid, authenticatedUser));
 
         verify(productRepository).findByUuidAndUser(nonExistingUuid, user);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -109,7 +106,7 @@ public class ProductServiceTest {
         final var productDto = productService.getProduct(product.getUuid(), authenticatedUser);
 
         assertThat(productDto).isEqualTo(ProductFixtureFactory.createProductDto());
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -123,7 +120,7 @@ public class ProductServiceTest {
                 .updateProduct(nonExistingUuid, mock(UpdateProductDto.class), authenticatedUser));
 
         verify(productRepository).findByUuidAndUser(nonExistingUuid, user);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -138,7 +135,7 @@ public class ProductServiceTest {
                 .updateProduct(productUuid, mock(UpdateProductDto.class), authenticatedUser));
 
         verify(productRepository).findByUuidAndUser(productUuid, user);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -149,15 +146,13 @@ public class ProductServiceTest {
         final var product = ProductFixtureFactory.createProduct();
         doReturn(Optional.of(product)).when(productRepository).findByUuidAndUser(productUuid, user);
 
-        when(commonServiceUtil.applyChangeIfNeeded(any(), any(), any())).thenCallRealMethod();
         final var updateProductDto = new UpdateProductDto(null, null, product.getPrice());
         final var expectedUpdateResult = ProductFixtureFactory.createProductDto();
         assertThat(productService.updateProduct(productUuid, updateProductDto, authenticatedUser))
                 .isEqualTo(expectedUpdateResult);
 
         verify(productRepository).findByUuidAndUser(productUuid, user);
-        verify(commonServiceUtil, times(3)).applyChangeIfNeeded(any(), any(), any());
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -169,19 +164,16 @@ public class ProductServiceTest {
         final var countInStock = product.getCountInStock();
         doReturn(Optional.of(product)).when(productRepository).findByUuidAndUser(productUuid, user);
 
-        when(commonServiceUtil.applyChangeIfNeeded(any(), any(), any())).thenCallRealMethod();
         final var updateProductDto = new UpdateProductDto("newName", 17, 18);
 
         final var expectedUpdateResult = productService.updateProduct(productUuid, updateProductDto, authenticatedUser);
 
+        assertThat(expectedUpdateResult).isEqualToComparingOnlyGivenFields(updateProductDto,
+                "name", "volume", "price");
         assertThat(expectedUpdateResult.getUuid()).isNotEqualTo(productUuid);
-        assertThat(expectedUpdateResult.getName()).isEqualTo(updateProductDto.getName());
-        assertThat(expectedUpdateResult.getVolume()).isEqualTo(updateProductDto.getVolume());
-        assertThat(expectedUpdateResult.getPrice()).isEqualTo(updateProductDto.getPrice());
         assertThat(expectedUpdateResult.getCountInStock()).isEqualTo(countInStock);
 
         verify(productRepository).findByUuidAndUser(productUuid, user);
-        verify(commonServiceUtil, times(3)).applyChangeIfNeeded(any(), any(), any());
 
         final var productCaptor = ArgumentCaptor.forClass(Product.class);
         verify(productRepository, times(2)).save(productCaptor.capture());
@@ -192,12 +184,11 @@ public class ProductServiceTest {
 
         final var savedNewProduct = productCaptor.getAllValues().get(1);
         assertThat(savedNewProduct.getUuid()).isNotEqualTo(productUuid);
-        assertThat(savedNewProduct.getName()).isEqualTo(updateProductDto.getName());
-        assertThat(savedNewProduct.getVolume()).isEqualTo(updateProductDto.getVolume());
-        assertThat(savedNewProduct.getPrice()).isEqualTo(updateProductDto.getPrice());
+        assertThat(savedNewProduct).isEqualToComparingOnlyGivenFields(updateProductDto,
+                "name", "volume", "price");
         assertThat(savedNewProduct.getCountInStock()).isEqualTo(countInStock);
 
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -211,7 +202,7 @@ public class ProductServiceTest {
                 .updateCountInStock(nonExistingUuid, mock(UpdateCountInStockDto.class), authenticatedUser));
 
         verify(productRepository).findByUuidAndUser(nonExistingUuid, user);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -226,7 +217,7 @@ public class ProductServiceTest {
                 .updateCountInStock(productUuid, mock(UpdateCountInStockDto.class), authenticatedUser));
 
         verify(productRepository).findByUuidAndUser(productUuid, user);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -237,15 +228,13 @@ public class ProductServiceTest {
         final var product = ProductFixtureFactory.createProduct();
         doReturn(Optional.of(product)).when(productRepository).findByUuidAndUser(productUuid, user);
 
-        when(commonServiceUtil.applyChangeIfNeeded(any(), any(), any())).thenCallRealMethod();
         final var updateCountInStockDto = new UpdateCountInStockDto(product.getCountInStock());
         final var expectedUpdateResult = ProductFixtureFactory.createProductDto();
         assertThat(productService.updateCountInStock(productUuid, updateCountInStockDto, authenticatedUser))
                 .isEqualTo(expectedUpdateResult);
 
-        verify(commonServiceUtil).applyChangeIfNeeded(any(), any(), any());
         verify(productRepository).findByUuidAndUser(productUuid, user);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -256,7 +245,6 @@ public class ProductServiceTest {
         final var productUuid = product.getUuid();
         doReturn(Optional.of(product)).when(productRepository).findByUuidAndUser(productUuid, user);
 
-        when(commonServiceUtil.applyChangeIfNeeded(any(), any(), any())).thenCallRealMethod();
         final var updateCountInStockDto = new UpdateCountInStockDto(18);
 
         final var expectedUpdateResult = productService.updateCountInStock(
@@ -266,12 +254,11 @@ public class ProductServiceTest {
         assertThat(expectedUpdateResult.getCountInStock()).isEqualTo(updateCountInStockDto.getCountInStock());
 
         verify(productRepository).findByUuidAndUser(productUuid, user);
-        verify(commonServiceUtil, times(1)).applyChangeIfNeeded(any(), any(), any());
 
         product.setCountInStock(updateCountInStockDto.getCountInStock());
         verify(productRepository).save(product);
 
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -285,7 +272,7 @@ public class ProductServiceTest {
                 .deleteProduct(nonExistingUuid, authenticatedUser));
 
         verify(productRepository).findByUuidAndUser(nonExistingUuid, user);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -300,7 +287,7 @@ public class ProductServiceTest {
                 .deleteProduct(productUuid, authenticatedUser));
 
         verify(productRepository).findByUuidAndUser(productUuid, user);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test
@@ -316,6 +303,6 @@ public class ProductServiceTest {
         verify(productRepository).findByUuidAndUser(productUuid, user);
         product.setIsActive(false);
         verify(productRepository).save(product);
-        verifyNoMoreInteractions(productRepository, commonServiceUtil);
+        verifyNoMoreInteractions(productRepository);
     }
 }

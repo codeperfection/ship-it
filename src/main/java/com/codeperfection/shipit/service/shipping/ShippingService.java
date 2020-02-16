@@ -11,8 +11,8 @@ import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.exception.clienterror.ShippingInactiveTransporterException;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
+import com.codeperfection.shipit.repository.TransporterRepository;
 import com.codeperfection.shipit.security.AuthenticatedUser;
-import com.codeperfection.shipit.service.CommonServiceUtil;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,17 +27,18 @@ public class ShippingService {
 
     private ShippingHelperComponent shippingHelperComponent;
 
-    private CommonServiceUtil commonServiceUtil;
-
     private ProductRepository productRepository;
+
+    private TransporterRepository transporterRepository;
 
     private ShippingRepository shippingRepository;
 
-    public ShippingService(ShippingHelperComponent shippingHelperComponent, CommonServiceUtil commonServiceUtil,
-                           ProductRepository productRepository, ShippingRepository shippingRepository) {
+    public ShippingService(ShippingHelperComponent shippingHelperComponent,
+                           ProductRepository productRepository, TransporterRepository transporterRepository,
+                           ShippingRepository shippingRepository) {
         this.shippingHelperComponent = shippingHelperComponent;
-        this.commonServiceUtil = commonServiceUtil;
         this.productRepository = productRepository;
+        this.transporterRepository = transporterRepository;
         this.shippingRepository = shippingRepository;
     }
 
@@ -86,7 +87,8 @@ public class ShippingService {
     }
 
     private Transporter getActiveTransporter(UUID transporterUuid, User user) {
-        final var transporter = commonServiceUtil.getTransporter(transporterUuid, user);
+        final var transporter = transporterRepository.findByUuidAndUser(transporterUuid, user)
+                .orElseThrow(() -> new EntityNotFoundException(transporterUuid));
         if (!transporter.getIsActive()) {
             throw new ShippingInactiveTransporterException(transporterUuid);
         }

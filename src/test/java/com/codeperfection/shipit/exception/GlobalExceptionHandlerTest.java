@@ -1,13 +1,8 @@
-package exception;
+package com.codeperfection.shipit.exception;
 
-import com.codeperfection.shipit.exception.GlobalExceptionHandler;
-import com.codeperfection.shipit.exception.InternalServerErrorException;
 import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.exception.errordto.ErrorType;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpStatus;
@@ -23,12 +18,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-@SuppressWarnings({"ConstantConditions", "ThrowableNotThrown"})
-@ExtendWith(MockitoExtension.class)
+@SuppressWarnings({"ConstantConditions"})
 public class GlobalExceptionHandlerTest {
 
-    @InjectMocks
-    private GlobalExceptionHandler globalExceptionHandler;
+    private GlobalExceptionHandler globalExceptionHandler = new GlobalExceptionHandler();
 
     @Test
     public void clientErrorExceptionReturnsExpectedResponseEntity() {
@@ -107,7 +100,5 @@ public class GlobalExceptionHandlerTest {
         assertThat(responseBody.getMessage()).contains(exception.getMessage());
         final var epsilon = within(10, ChronoUnit.SECONDS);
         assertThat(responseBody.getTimestamp()).isCloseToUtcNow(epsilon);
-
     }
-
 }

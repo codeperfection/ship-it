@@ -23,6 +23,7 @@ import org.springframework.data.domain.Sort;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
@@ -33,9 +34,6 @@ public class TransporterServiceTest {
 
     @Mock
     private TransporterRepository transporterRepository;
-
-    @Mock
-    private CommonServiceUtil commonServiceUtil;
 
     @Spy
     private ModelMapper modelMapper;
@@ -63,7 +61,7 @@ public class TransporterServiceTest {
         assertThat(savedTransporter.getUser().getUuid()).isEqualTo(authenticatedUser.getUuid());
 
         assertThat(savedTransporterDto).isEqualTo(transporterDto);
-        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
+        verifyNoMoreInteractions(transporterRepository);
     }
 
     @Test
@@ -79,20 +77,20 @@ public class TransporterServiceTest {
 
         assertThat(transportersPage).isEqualTo(new PageDto<>(databasePage.getTotalElements(),
                 databasePage.getTotalPages(), List.of(TransporterFixtureFactory.createTransporterDto())));
-        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
+        verifyNoMoreInteractions(transporterRepository);
     }
 
     @Test
     public void getTransporterReturnsDto() {
         final var transporter = TransporterFixtureFactory.createTransporter();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        doReturn(transporter).when(commonServiceUtil).getTransporter(transporter.getUuid(),
+        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(transporter.getUuid(),
                 User.withUuid(authenticatedUser.getUuid()));
 
         final var resultTransporterDto = transporterService.getTransporter(transporter.getUuid(), authenticatedUser);
 
         assertThat(resultTransporterDto).isEqualTo(TransporterFixtureFactory.createTransporterDto());
-        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
+        verifyNoMoreInteractions(transporterRepository);
     }
 
     @Test
@@ -101,13 +99,13 @@ public class TransporterServiceTest {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var inactiveTransporter = Transporter.builder().isActive(false).build();
-        doReturn(inactiveTransporter).when(commonServiceUtil).getTransporter(transporterUuid, user);
+        doReturn(Optional.of(inactiveTransporter)).when(transporterRepository).findByUuidAndUser(transporterUuid, user);
 
         assertThatExceptionOfType(CannotChangeInactiveEntityException.class).isThrownBy(() -> transporterService
                 .updateTransporter(transporterUuid, mock(UpdateTransporterDto.class), authenticatedUser));
 
-        verify(commonServiceUtil).getTransporter(transporterUuid, user);
-        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
+        verify(transporterRepository).findByUuidAndUser(transporterUuid, user);
+        verifyNoMoreInteractions(transporterRepository);
     }
 
     @Test
@@ -116,17 +114,15 @@ public class TransporterServiceTest {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var transporter = TransporterFixtureFactory.createTransporter();
-        doReturn(transporter).when(commonServiceUtil).getTransporter(transporterUuid, user);
+        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(transporterUuid, user);
 
-        when(commonServiceUtil.applyChangeIfNeeded(any(), any(), any())).thenCallRealMethod();
         final var updateTransporterDto = new UpdateTransporterDto(null, transporter.getCapacity());
         final var expectedUpdateResult = TransporterFixtureFactory.createTransporterDto();
         assertThat(transporterService.updateTransporter(transporterUuid, updateTransporterDto, authenticatedUser))
                 .isEqualTo(expectedUpdateResult);
 
-        verify(commonServiceUtil).getTransporter(transporterUuid, user);
-        verify(commonServiceUtil, times(2)).applyChangeIfNeeded(any(), any(), any());
-        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
+        verify(transporterRepository).findByUuidAndUser(transporterUuid, user);
+        verifyNoMoreInteractions(transporterRepository);
     }
 
     @Test
@@ -135,9 +131,8 @@ public class TransporterServiceTest {
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var transporter = TransporterFixtureFactory.createTransporter();
         final var transporterUuid = transporter.getUuid();
-        doReturn(transporter).when(commonServiceUtil).getTransporter(transporterUuid, user);
+        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(transporterUuid, user);
 
-        when(commonServiceUtil.applyChangeIfNeeded(any(), any(), any())).thenCallRealMethod();
         final var updateTransporterDto = new UpdateTransporterDto("newName", 17);
 
         final var expectedUpdateResult = transporterService.updateTransporter(
@@ -147,8 +142,7 @@ public class TransporterServiceTest {
         assertThat(expectedUpdateResult.getName()).isEqualTo(updateTransporterDto.getName());
         assertThat(expectedUpdateResult.getCapacity()).isEqualTo(updateTransporterDto.getCapacity());
 
-        verify(commonServiceUtil).getTransporter(transporterUuid, user);
-        verify(commonServiceUtil, times(2)).applyChangeIfNeeded(any(), any(), any());
+        verify(transporterRepository).findByUuidAndUser(transporterUuid, user);
 
         final var transporterCaptor = ArgumentCaptor.forClass(Transporter.class);
         verify(transporterRepository, times(2)).save(transporterCaptor.capture());
@@ -161,7 +155,7 @@ public class TransporterServiceTest {
         assertThat(savedNewTransporter.getName()).isEqualTo(updateTransporterDto.getName());
         assertThat(savedNewTransporter.getCapacity()).isEqualTo(updateTransporterDto.getCapacity());
 
-        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
+        verifyNoMoreInteractions(transporterRepository);
     }
 
     @Test
@@ -170,13 +164,13 @@ public class TransporterServiceTest {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var inactiveTransporter = Transporter.builder().isActive(false).build();
-        doReturn(inactiveTransporter).when(commonServiceUtil).getTransporter(transporterUuid, user);
+        doReturn(Optional.of(inactiveTransporter)).when(transporterRepository).findByUuidAndUser(transporterUuid, user);
 
         assertThatExceptionOfType(CannotChangeInactiveEntityException.class).isThrownBy(() -> transporterService
                 .deleteTransporter(transporterUuid, authenticatedUser));
 
-        verify(commonServiceUtil).getTransporter(transporterUuid, user);
-        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
+        verify(transporterRepository).findByUuidAndUser(transporterUuid, user);
+        verifyNoMoreInteractions(transporterRepository);
     }
 
     @Test
@@ -185,13 +179,13 @@ public class TransporterServiceTest {
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var transporter = TransporterFixtureFactory.createTransporter();
         final var transporterUuid = transporter.getUuid();
-        doReturn(transporter).when(commonServiceUtil).getTransporter(transporterUuid, user);
+        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(transporterUuid, user);
 
         transporterService.deleteTransporter(transporterUuid, authenticatedUser);
 
-        verify(commonServiceUtil).getTransporter(transporterUuid, user);
+        verify(transporterRepository).findByUuidAndUser(transporterUuid, user);
         transporter.setIsActive(false);
         verify(transporterRepository).save(transporter);
-        verifyNoMoreInteractions(transporterRepository, commonServiceUtil);
+        verifyNoMoreInteractions(transporterRepository);
     }
 }

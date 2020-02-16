@@ -28,14 +28,10 @@ public class ProductService {
 
     private ProductRepository productRepository;
 
-    private CommonServiceUtil commonServiceUtil;
-
     private ModelMapper modelMapper;
 
-    public ProductService(ProductRepository productRepository, CommonServiceUtil commonServiceUtil,
-                          ModelMapper modelMapper) {
+    public ProductService(ProductRepository productRepository, ModelMapper modelMapper) {
         this.productRepository = productRepository;
-        this.commonServiceUtil = commonServiceUtil;
         this.modelMapper = modelMapper;
     }
 
@@ -148,11 +144,11 @@ public class ProductService {
     }
 
     private boolean applyChanges(Product product, UpdateProductDto updateDto) {
-        boolean changed = commonServiceUtil.applyChangeIfNeeded(
+        boolean changed = CommonServiceUtil.applyChangeIfNeeded(
                 product.getName(), updateDto.getName(), product::setName);
-        changed |= commonServiceUtil.applyChangeIfNeeded(
+        changed |= CommonServiceUtil.applyChangeIfNeeded(
                 product.getPrice(), updateDto.getPrice(), product::setPrice);
-        changed |= commonServiceUtil.applyChangeIfNeeded(
+        changed |= CommonServiceUtil.applyChangeIfNeeded(
                 product.getVolume(), updateDto.getVolume(), product::setVolume);
         return changed;
     }
@@ -168,7 +164,7 @@ public class ProductService {
     }
 
     private boolean applyChanges(Product product, UpdateCountInStockDto updateDto) {
-        return commonServiceUtil.applyChangeIfNeeded(
+        return CommonServiceUtil.applyChangeIfNeeded(
                 product.getCountInStock(), updateDto.getCountInStock(), product::setCountInStock);
     }
 }

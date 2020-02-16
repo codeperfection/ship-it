@@ -8,6 +8,7 @@ import com.codeperfection.shipit.dto.transporter.UpdateTransporterDto;
 import com.codeperfection.shipit.entity.Transporter;
 import com.codeperfection.shipit.entity.User;
 import com.codeperfection.shipit.exception.clienterror.CannotChangeInactiveEntityException;
+import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.repository.TransporterRepository;
 import com.codeperfection.shipit.security.AuthenticatedUser;
 import org.modelmapper.ModelMapper;
@@ -26,20 +27,17 @@ public class TransporterService {
 
     private TransporterRepository transporterRepository;
 
-    private CommonServiceUtil commonServiceUtil;
-
     private ModelMapper modelMapper;
 
-    public TransporterService(TransporterRepository transporterRepository, CommonServiceUtil commonServiceUtil,
-                              ModelMapper modelMapper) {
+    public TransporterService(TransporterRepository transporterRepository, ModelMapper modelMapper) {
         this.transporterRepository = transporterRepository;
-        this.commonServiceUtil = commonServiceUtil;
         this.modelMapper = modelMapper;
     }
 
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public TransporterDto createTransporter(CreateTransporterDto createTransporterDto, AuthenticatedUser authenticatedUser) {
+    public TransporterDto createTransporter(CreateTransporterDto createTransporterDto,
+                                            AuthenticatedUser authenticatedUser) {
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var transporter = transporterRepository.save(createTransporter(createTransporterDto, user));
         return mapToDto(transporter);
@@ -64,7 +62,7 @@ public class TransporterService {
     @PreAuthorize("hasRole('USER')")
     public TransporterDto getTransporter(UUID transporterUuid, AuthenticatedUser authenticatedUser) {
         final var user = User.withUuid(authenticatedUser.getUuid());
-        return mapToDto(commonServiceUtil.getTransporter(transporterUuid, user));
+        return mapToDto(getTransporter(transporterUuid, user));
     }
 
     @Transactional
@@ -107,7 +105,7 @@ public class TransporterService {
     }
 
     private Transporter getActiveTransporterForUpdate(UUID transporterUuid, User user) {
-        final var transporter = commonServiceUtil.getTransporter(transporterUuid, user);
+        final var transporter = getTransporter(transporterUuid, user);
         if (!transporter.getIsActive()) {
             throw new CannotChangeInactiveEntityException(transporterUuid);
         }
@@ -126,9 +124,9 @@ public class TransporterService {
     }
 
     private boolean applyChanges(Transporter transporter, UpdateTransporterDto updateDto) {
-        boolean changed = commonServiceUtil.applyChangeIfNeeded(
+        boolean changed = CommonServiceUtil.applyChangeIfNeeded(
                 transporter.getName(), updateDto.getName(), transporter::setName);
-        changed |= commonServiceUtil.applyChangeIfNeeded(
+        changed |= CommonServiceUtil.applyChangeIfNeeded(
                 transporter.getCapacity(), updateDto.getCapacity(), transporter::setCapacity);
 
         return changed;
@@ -137,5 +135,10 @@ public class TransporterService {
     private void deactivate(Transporter currentTransporter) {
         currentTransporter.setIsActive(false);
         transporterRepository.save(currentTransporter);
+    }
+
+    private Transporter getTransporter(UUID transporterUuid, User user) {
+        return transporterRepository.findByUuidAndUser(transporterUuid, user)
+                .orElseThrow(() -> new EntityNotFoundException(transporterUuid));
     }
 }

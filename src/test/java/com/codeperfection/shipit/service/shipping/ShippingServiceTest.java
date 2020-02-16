@@ -8,7 +8,7 @@ import com.codeperfection.shipit.exception.clienterror.EntityNotFoundException;
 import com.codeperfection.shipit.exception.clienterror.ShippingInactiveTransporterException;
 import com.codeperfection.shipit.repository.ProductRepository;
 import com.codeperfection.shipit.repository.ShippingRepository;
-import com.codeperfection.shipit.service.CommonServiceUtil;
+import com.codeperfection.shipit.repository.TransporterRepository;
 import com.codeperfection.shipit.util.AuthenticationFixtureFactory;
 import com.codeperfection.shipit.util.ProductFixtureFactory;
 import com.codeperfection.shipit.util.ShippingFixtureFactory;
@@ -38,7 +38,7 @@ public class ShippingServiceTest {
     private ShippingHelperComponent shippingHelperComponent;
 
     @Mock
-    private CommonServiceUtil commonServiceUtil;
+    private TransporterRepository transporterRepository;
 
     @Mock
     private ProductRepository productRepository;
@@ -50,20 +50,35 @@ public class ShippingServiceTest {
     private ShippingService shippingService;
 
     @Test
+    public void createShippingIfTransporterNotFoundThrowsException() {
+        final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
+        final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
+        final var user = User.withUuid(authenticatedUser.getUuid());
+        doReturn(Optional.empty()).when(transporterRepository).findByUuidAndUser(
+                createShippingDto.getTransporterUuid(), user);
+
+        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() ->
+                shippingService.createShipping(createShippingDto, authenticatedUser));
+
+        verify(transporterRepository).findByUuidAndUser(createShippingDto.getTransporterUuid(), user);
+        verifyNoMoreInteractions(shippingHelperComponent, productRepository, shippingRepository);
+    }
+
+    @Test
     public void createShippingIfTransporterNotActiveThrowsException() {
         final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var transporter = TransporterFixtureFactory.createTransporter();
         transporter.setIsActive(false);
         final var user = User.withUuid(authenticatedUser.getUuid());
-        doReturn(transporter).when(commonServiceUtil).getTransporter(
+        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(
                 createShippingDto.getTransporterUuid(), user);
 
         assertThatExceptionOfType(ShippingInactiveTransporterException.class).isThrownBy(() ->
                 shippingService.createShipping(createShippingDto, authenticatedUser));
 
-        verify(commonServiceUtil).getTransporter(transporter.getUuid(), user);
-        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+        verify(transporterRepository).findByUuidAndUser(transporter.getUuid(), user);
+        verifyNoMoreInteractions(shippingHelperComponent, productRepository, shippingRepository);
     }
 
     @Test
@@ -72,7 +87,7 @@ public class ShippingServiceTest {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var transporter = TransporterFixtureFactory.createTransporter();
         final var user = User.withUuid(authenticatedUser.getUuid());
-        doReturn(transporter).when(commonServiceUtil).getTransporter(
+        doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(
                 createShippingDto.getTransporterUuid(), user);
 
         final var product = ProductFixtureFactory.createProduct();
@@ -89,10 +104,10 @@ public class ShippingServiceTest {
         doReturn(shippingDto).when(shippingHelperComponent).mapToDto(shipping);
 
         assertThat(shippingService.createShipping(createShippingDto, authenticatedUser)).isEqualTo(shippingDto);
-        verify(commonServiceUtil).getTransporter(transporter.getUuid(), user);
+        verify(transporterRepository).findByUuidAndUser(transporter.getUuid(), user);
         verify(shippingHelperComponent).runPlacer(transporter, products);
         verify(shippingHelperComponent).deductPlacedProductsFromStock(placedProducts);
-        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, productRepository, shippingRepository);
     }
 
     @Test
@@ -110,7 +125,7 @@ public class ShippingServiceTest {
 
         assertThat(shippingsPage).isEqualTo(new PageDto<>(databasePage.getTotalElements(),
                 databasePage.getTotalPages(), List.of(shippingDto)));
-        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, productRepository, shippingRepository);
     }
 
     @Test
@@ -122,7 +137,7 @@ public class ShippingServiceTest {
 
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() ->
                 shippingService.getShipping(nonExistingUuid, authenticatedUser));
-        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, productRepository, shippingRepository);
     }
 
     @Test
@@ -137,7 +152,7 @@ public class ShippingServiceTest {
         final var shippingDto = shippingService.getShipping(shipping.getUuid(), authenticatedUser);
 
         assertThat(shippingDto).isEqualTo(expectedShippingDto);
-        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, productRepository, shippingRepository);
     }
 
     @Test
@@ -151,7 +166,7 @@ public class ShippingServiceTest {
                 .deleteShipping(nonExistingUuid, authenticatedUser));
 
         verify(shippingRepository).findByUuidAndUser(nonExistingUuid, user);
-        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, productRepository, shippingRepository);
     }
 
     @Test
@@ -166,6 +181,6 @@ public class ShippingServiceTest {
 
         verify(shippingRepository).findByUuidAndUser(shippingUuid, user);
         verify(shippingRepository).delete(shipping);
-        verifyNoMoreInteractions(shippingHelperComponent, commonServiceUtil, productRepository, shippingRepository);
+        verifyNoMoreInteractions(shippingHelperComponent, productRepository, shippingRepository);
     }
 }

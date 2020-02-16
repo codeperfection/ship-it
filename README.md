@@ -10,13 +10,13 @@ price value is as large as possible.
 
 The following technologies have been used:
 - Java 11
-- Spring Boot 2.2.2
+- Spring Boot 2
 - PostgreSQL 12
 
 The service is fully stateless with a custom JWT based authentication filter.
 
 The shipping creation is an example of [0-1 knapsack problem](https://en.wikipedia.org/wiki/Knapsack_problem), which is
-solved using [dynamic programming](https://en.wikipedia.org/wiki/Dynamic_programming)
+solved using [dynamic programming](https://en.wikipedia.org/wiki/Dynamic_programming).
 
 ## Getting Started
 
