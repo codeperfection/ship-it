@@ -11,17 +11,17 @@ import static org.mockito.Mockito.mock;
 
 public class KnapsackPlacerTest {
 
-    private KnapsackPlacer knapsackPlacer = new KnapsackPlacer();
+    private final KnapsackPlacer knapsackPlacer = new KnapsackPlacer();
 
     @Test
-    public void placeIfEmptyItemsReturnsEmptyKnapsack() {
+    public void place_IfEmptyItems_ReturnsEmptyKnapsack() {
         int capacity = 7;
         final var knapsack = knapsackPlacer.place(new Item[]{}, capacity);
         assertThat(knapsack).isEqualTo(new Knapsack(capacity, 0, Collections.emptyList()));
     }
 
     @Test
-    public void placeIfTooLargeItemsReturnsEmptyKnapsack() {
+    public void place_IfTooLargeItems_ReturnsEmptyKnapsack() {
         int capacity = 7;
         final var largeItem = new Item(mock(Product.class), 10, 10);
         final var knapsack = knapsackPlacer.place(new Item[]{largeItem}, capacity);
@@ -29,7 +29,7 @@ public class KnapsackPlacerTest {
     }
 
     @Test
-    public void placeIfNormalItemsReturnsOptimallyPlacedKnapsack() {
+    public void place_IfNormalItems_ReturnsOptimallyPlacedKnapsack() {
         final var item1 = new Item(mock(Product.class), 15, 17);
         final var item2 = new Item(mock(Product.class), 21, 33);
         final var item3 = new Item(mock(Product.class), 30, 45);
@@ -43,6 +43,6 @@ public class KnapsackPlacerTest {
         int capacity = 100;
         final var knapsack = knapsackPlacer.place(items, capacity);
         var expectedItems = List.of(item4, item3, item3, item2, item1);
-        assertThat(knapsack).isEqualToIgnoringGivenFields(new Knapsack(capacity, 141, expectedItems));
+        assertThat(knapsack).isEqualTo(new Knapsack(capacity, 141, expectedItems));
     }
 }

@@ -53,7 +53,7 @@ public class JwtAuthenticationFilterTest {
     }
 
     @Test
-    public void doFilterInternalIfNoJwtInRequestContinuesChain() throws IOException, ServletException {
+    public void doFilterInternal_IfNoJwtInRequest_ContinuesChain() throws IOException, ServletException {
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
@@ -62,7 +62,7 @@ public class JwtAuthenticationFilterTest {
     }
 
     @Test
-    public void doFilterInternalIfTokenIssuedAfterPasswordResetExceptionHandled() throws IOException, ServletException {
+    public void doFilterInternal_IfTokenIssuedAfterPasswordReset_ExceptionHandled() throws IOException, ServletException {
         final var authenticatedUser = mockAuthenticatedUser();
         var tokenClaims = mock(Claims.class);
         mockTokenClaims(tokenClaims, authenticatedUser);
@@ -79,7 +79,7 @@ public class JwtAuthenticationFilterTest {
     }
 
     @Test
-    public void doFilterInternalIfValidTokenSetsAuthentication() throws IOException, ServletException {
+    public void doFilterInternal_IfValidToken_SetsAuthentication() throws IOException, ServletException {
         final var authenticatedUser = mockAuthenticatedUser();
         var tokenClaims = mock(Claims.class);
         mockTokenClaims(tokenClaims, authenticatedUser);

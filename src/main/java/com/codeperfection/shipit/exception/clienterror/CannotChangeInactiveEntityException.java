@@ -8,7 +8,7 @@ import java.util.UUID;
 public class CannotChangeInactiveEntityException extends ClientErrorException {
 
     public CannotChangeInactiveEntityException(UUID entityUuid) {
-        super(String.format("Entity with '%s' identifier is inactive, thus it cannot be changed", entityUuid),
+        super(String.format("Entity with '%s' identifier is inactive, it cannot be changed", entityUuid),
                 HttpStatus.CONFLICT, ErrorType.INACTIVE_ENTITY_CHANGE);
     }
 }

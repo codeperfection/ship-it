@@ -19,7 +19,7 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     public JwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;

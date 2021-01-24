@@ -56,7 +56,7 @@ public class AuthenticationServiceTest {
     private AuthenticationService authenticationService;
 
     @Test
-    public void generateJwtTokenIfInvalidCredentialsThrowsException() {
+    public void generateJwtToken_IfInvalidCredentials_ThrowsException() {
         final var signInDto = AuthenticationFixtureFactory.createSignInDto();
         final var authentication = new UsernamePasswordAuthenticationToken(signInDto.getUsernameOrEmail(),
                 signInDto.getPassword());
@@ -69,7 +69,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void generateJwtTokenIfValidCredentialsReturnsDto() {
+    public void generateJwtToken_IfValidCredentials_ReturnsDto() {
         final var authentication = mock(Authentication.class);
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(authenticatedUser).when(authentication).getPrincipal();
@@ -97,7 +97,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void signUpUserIfExistingUsernameThrowsException() {
+    public void signUpUser_IfExistingUsername_ThrowsException() {
         final var signUpDto = AuthenticationFixtureFactory.createSignUpDto();
         doReturn(true).when(userRepository).existsByUsername(signUpDto.getUsername());
         assertThatExceptionOfType(UsernameAlreadyTakenException.class).isThrownBy(() ->
@@ -108,7 +108,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void signUpUserIfExistingEmailThrowsException() {
+    public void signUpUser_IfExistingEmail_ThrowsException() {
         final var signUpDto = AuthenticationFixtureFactory.createSignUpDto();
         doReturn(false).when(userRepository).existsByUsername(signUpDto.getUsername());
         doReturn(true).when(userRepository).existsByEmail(signUpDto.getEmail());
@@ -120,7 +120,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void signUpUserIfValidUserSavesInRepository() {
+    public void signUpUser_IfValidUser_SavesInRepository() {
         final var role = AuthenticationFixtureFactory.createRole();
         doReturn(Optional.of(role)).when(roleRepository).findByName(RoleName.ROLE_USER);
         String encodedPassword = "encodedPassword";
@@ -131,13 +131,13 @@ public class AuthenticationServiceTest {
 
         final var userDto = authenticationService.signUpUser(signUpDto);
         final var expectedUserDto = AuthenticationFixtureFactory.createUserDto();
-        assertThat(userDto).isEqualToIgnoringGivenFields(expectedUserDto, "uuid");
+        assertThat(userDto).usingRecursiveComparison().ignoringFields("uuid").isEqualTo(expectedUserDto);
 
         final var userArgumentCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userArgumentCaptor.capture());
 
         final var savedUser = userArgumentCaptor.getValue();
-        assertThat(userDto).isEqualToComparingFieldByField(savedUser);
+        assertThat(userDto).usingRecursiveComparison().isEqualTo(savedUser);
         assertThat(savedUser.getPassword()).isEqualTo(encodedPassword);
         assertThat(savedUser.getRoles()).containsOnly(role);
         final var epsilon = within(10, ChronoUnit.SECONDS);

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Service
 public class SecurityUserDetailsService implements UserDetailsService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public SecurityUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;

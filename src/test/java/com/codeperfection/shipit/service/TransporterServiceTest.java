@@ -42,7 +42,7 @@ public class TransporterServiceTest {
     private TransporterService transporterService;
 
     @Test
-    public void createTransporterIfValidDtoSavesEntity() {
+    public void createTransporter_IfValidDto_SavesEntity() {
         final var createTransporterDto = TransporterFixtureFactory.createCreateTransporterDto();
         final var transporterDto = TransporterFixtureFactory.createTransporterDto();
         final var transporter = TransporterFixtureFactory.createTransporter();
@@ -55,8 +55,8 @@ public class TransporterServiceTest {
         verify(transporterRepository).save(transporterArgumentCaptor.capture());
         final var savedTransporter = transporterArgumentCaptor.getValue();
 
-        assertThat(savedTransporter).isEqualToIgnoringGivenFields(transporter,
-                "user", "uuid", "createdAt");
+        assertThat(savedTransporter).usingRecursiveComparison().ignoringFields("user", "uuid", "createdAt")
+                .isEqualTo(transporter);
         assertThat(savedTransporter.getCreatedAt()).isCloseToUtcNow(within(10, ChronoUnit.SECONDS));
         assertThat(savedTransporter.getUser().getUuid()).isEqualTo(authenticatedUser.getUuid());
 
@@ -65,7 +65,7 @@ public class TransporterServiceTest {
     }
 
     @Test
-    public void getTransportersReturnsPaginatedDtos() {
+    public void getTransporters_ReturnsPaginatedDtos() {
         final var paginationFilterDto = new PaginationFilterDto(2, 1);
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var databasePage = new PageImpl<>(List.of(TransporterFixtureFactory.createTransporter()));
@@ -81,7 +81,7 @@ public class TransporterServiceTest {
     }
 
     @Test
-    public void getTransporterReturnsDto() {
+    public void getTransporter_ReturnsDto() {
         final var transporter = TransporterFixtureFactory.createTransporter();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(Optional.of(transporter)).when(transporterRepository).findByUuidAndUser(transporter.getUuid(),
@@ -94,7 +94,7 @@ public class TransporterServiceTest {
     }
 
     @Test
-    public void updateTransporterIfNotActiveThrowsException() {
+    public void updateTransporter_IfNotActive_ThrowsException() {
         final var transporterUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -109,7 +109,7 @@ public class TransporterServiceTest {
     }
 
     @Test
-    public void updateTransporterIfNothingToChangeNoRepositoryCall() {
+    public void updateTransporter_IfNothingToChange_NoRepositoryCall() {
         final var transporterUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -126,7 +126,7 @@ public class TransporterServiceTest {
     }
 
     @Test
-    public void updateTransporterIfChangeNeededDependenciesCalled() {
+    public void updateTransporter_IfChangeNeeded_DependenciesCalled() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var transporter = TransporterFixtureFactory.createTransporter();
@@ -159,7 +159,7 @@ public class TransporterServiceTest {
     }
 
     @Test
-    public void deleteTransporterIfNotActiveThrowsException() {
+    public void deleteTransporter_IfNotActive_ThrowsException() {
         final var transporterUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -174,7 +174,7 @@ public class TransporterServiceTest {
     }
 
     @Test
-    public void deleteTransporterIfFoundDependenciesCalled() {
+    public void deleteTransporter_IfFound_DependenciesCalled() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var transporter = TransporterFixtureFactory.createTransporter();

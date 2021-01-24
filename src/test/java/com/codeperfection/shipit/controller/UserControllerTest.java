@@ -24,13 +24,13 @@ public class UserControllerTest extends ControllerTestBase {
     private UserService userService;
 
     @Test
-    public void getCurrentUserIfNotAuthenticatedReturnsError() throws Exception {
+    public void getCurrentUser_IfNotAuthenticated_ReturnsError() throws Exception {
         checkUnauthorizedResponse(get(API_V1 + USERS_PATH + ME_PATH));
         verifyNoMoreInteractions(userService);
     }
 
     @Test
-    public void getCurrentUserIfAuthenticatedReturnsDto() throws Exception {
+    public void getCurrentUser_IfAuthenticated_ReturnsDto() throws Exception {
         mockAuthentication();
         final var userDto = AuthenticationFixtureFactory.createUserDto();
         doReturn(userDto).when(userService).getCurrentUser(authenticatedUser);
@@ -44,13 +44,13 @@ public class UserControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void changePasswordIfNotAuthenticatedReturnsError() throws Exception {
+    public void changePassword_IfNotAuthenticated_ReturnsError() throws Exception {
         checkUnauthorizedResponse(get(API_V1 + USERS_PATH + ME_PATH + PASSWORD_PATH));
         verifyNoMoreInteractions(userService);
     }
 
     @Test
-    public void changePasswordIfInvalidPayloadReturnsError() throws Exception {
+    public void changePassword_IfInvalidPayload_ReturnsError() throws Exception {
         mockAuthentication();
         final var invalidChangePasswordDto = new ChangePasswordDto("", "abd");
         mockMvc.perform(put(API_V1 + USERS_PATH + ME_PATH + PASSWORD_PATH)
@@ -65,7 +65,7 @@ public class UserControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void changePasswordIfAuthenticatedReturnsOk() throws Exception {
+    public void changePassword_IfAuthenticated_ReturnsOk() throws Exception {
         mockAuthentication();
         final var changePasswordDto = AuthenticationFixtureFactory.createChangePasswordDto();
         doNothing().when(userService).changePassword(changePasswordDto, authenticatedUser);

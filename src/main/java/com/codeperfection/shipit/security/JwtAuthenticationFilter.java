@@ -20,11 +20,11 @@ import java.util.UUID;
 @Service
 class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private SecurityUserDetailsService userDetailsService;
+    private final SecurityUserDetailsService userDetailsService;
 
-    private JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     JwtAuthenticationFilter(SecurityUserDetailsService userDetailsService, JwtTokenProvider jwtTokenProvider,
                             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {

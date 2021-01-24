@@ -38,7 +38,7 @@ public class UserServiceTest {
     private UserService userService;
 
     @Test
-    public void getCurrentUserIfNotFoundThrowsException() {
+    public void getCurrentUser_IfNotFound_ThrowsException() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(Optional.empty()).when(userRepository).findById(authenticatedUser.getUuid());
         assertThatExceptionOfType(UserNotFoundException.class).isThrownBy(() ->
@@ -47,20 +47,20 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getCurrentUserIfFoundReturnsDto() {
+    public void getCurrentUser_IfFound_ReturnsDto() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = AuthenticationFixtureFactory.createUser();
         doReturn(Optional.of(user)).when(userRepository).findById(authenticatedUser.getUuid());
 
         final var userDto = userService.getCurrentUser(authenticatedUser);
-        assertThat(userDto).isEqualToComparingFieldByField(user);
+        assertThat(userDto).usingRecursiveComparison().isEqualTo(user);
 
         verify(modelMapper).map(user, UserDto.class);
         verifyNoMoreInteractions(userRepository, modelMapper);
     }
 
     @Test
-    public void changePasswordIfNotFoundThrowsException() {
+    public void changePassword_IfNotFound_ThrowsException() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(Optional.empty()).when(userRepository).findById(authenticatedUser.getUuid());
         assertThatExceptionOfType(UserNotFoundException.class).isThrownBy(() ->
@@ -69,7 +69,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void changePasswordIfIncorrectPasswordThrowsException() {
+    public void changePassword_IfIncorrectPassword_ThrowsException() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = AuthenticationFixtureFactory.createUser();
         final var changePasswordDto = AuthenticationFixtureFactory.createChangePasswordDto();
@@ -81,7 +81,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void changePasswordIfCorrectPasswordSavesNewPassword() {
+    public void changePassword_IfCorrectPassword_SavesNewPassword() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = AuthenticationFixtureFactory.createUser();
         final var changePasswordDto = AuthenticationFixtureFactory.createChangePasswordDto();
@@ -95,8 +95,8 @@ public class UserServiceTest {
         final var userArgumentCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userArgumentCaptor.capture());
         final var savedUser = userArgumentCaptor.getValue();
-        assertThat(savedUser).isEqualToIgnoringGivenFields(user,
-                "password", "passwordChangeDate", "updatedAt");
+        assertThat(savedUser).usingRecursiveComparison().ignoringFields("password", "passwordChangeDate", "updatedAt")
+                .isEqualTo(user);
         assertThat(savedUser.getPassword()).isEqualTo(newEncodedPassword);
         final var epsilon = within(10, ChronoUnit.SECONDS);
         assertThat(savedUser.getPasswordChangeDate()).isCloseToUtcNow(epsilon);

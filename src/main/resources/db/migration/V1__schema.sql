@@ -58,9 +58,7 @@ CREATE TABLE product
     FOREIGN KEY (user_uuid) REFERENCES auth_user (uuid)
 );
 
-CREATE INDEX product_user_uuid ON product (user_uuid);
-CREATE INDEX product_is_active ON product (is_active);
-CREATE INDEX product_created_at ON product (created_at);
+CREATE INDEX product_user_active_date ON product (user_uuid, is_active, created_at);
 
 CREATE TABLE transporter
 (
@@ -78,9 +76,7 @@ CREATE TABLE transporter
     FOREIGN KEY (user_uuid) REFERENCES auth_user (uuid)
 );
 
-CREATE INDEX transporter_user_uuid ON transporter (user_uuid);
-CREATE INDEX transporter_is_active ON transporter (is_active);
-CREATE INDEX transporter_created_at ON transporter (created_at);
+CREATE INDEX transporter_user_active_date ON transporter (user_uuid, is_active, created_at);
 
 CREATE TABLE shipping
 (
@@ -98,8 +94,7 @@ CREATE TABLE shipping
     FOREIGN KEY (transporter_uuid) REFERENCES transporter (uuid)
 );
 
-CREATE INDEX shipping_user_uuid ON shipping (user_uuid);
-CREATE INDEX shipping_created_at ON shipping (created_at);
+CREATE INDEX shipping_user_date ON shipping (user_uuid, created_at);
 
 CREATE TABLE shipped_item
 (

@@ -21,10 +21,10 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings({"ConstantConditions"})
 public class GlobalExceptionHandlerTest {
 
-    private GlobalExceptionHandler globalExceptionHandler = new GlobalExceptionHandler();
+    private final GlobalExceptionHandler globalExceptionHandler = new GlobalExceptionHandler();
 
     @Test
-    public void clientErrorExceptionReturnsExpectedResponseEntity() {
+    public void clientErrorException_ReturnsExpectedResponseEntity() {
         final var exception = new EntityNotFoundException(UUID.randomUUID());
 
         final var response = globalExceptionHandler.clientErrorException(exception);
@@ -40,7 +40,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    public void httpMessageNotReadableExceptionReturnsExpectedResponseEntity() {
+    public void httpMessageNotReadableException_ReturnsExpectedResponseEntity() {
         final var exception = new HttpMessageNotReadableException("Some message", mock(HttpInputMessage.class));
 
         final var response = globalExceptionHandler.httpMessageNotReadableException(exception);
@@ -56,7 +56,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    public void methodArgumentTypeMismatchExceptionIfNotPathVariableForwardsException() {
+    public void methodArgumentTypeMismatchException_IfNotPathVariable_ForwardsException() {
         final var exception = mock(MethodArgumentTypeMismatchException.class);
         final var methodParameter = mock(MethodParameter.class);
         doReturn(methodParameter).when(exception).getParameter();
@@ -67,7 +67,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    public void methodArgumentTypeMismatchExceptionIfPathVariableReturnsExpectedResponseEntity() {
+    public void methodArgumentTypeMismatchException_IfPathVariable_ReturnsExpectedResponseEntity() {
         final var exception = mock(MethodArgumentTypeMismatchException.class);
         final var methodParameter = mock(MethodParameter.class);
         doReturn(methodParameter).when(exception).getParameter();
@@ -88,7 +88,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    public void internalServerErrorExceptionReturnsExpectedResponseEntity() {
+    public void internalServerErrorException_ReturnsExpectedResponseEntity() {
         final var exception = new InternalServerErrorException("Some message");
         final var response = globalExceptionHandler.internalServerErrorException(exception);
 

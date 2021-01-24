@@ -1,8 +1,6 @@
 package com.codeperfection.shipit.service.shipping.placer;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Value;
 
 import java.util.List;
 
@@ -10,14 +8,12 @@ import java.util.List;
  * Optimally placed knapsack. The total volume of all the items is less than or equal to the capacity of the knapsack,
  * while the total price is as large as possible.
  */
-@AllArgsConstructor
-@EqualsAndHashCode
-@Getter
-class Knapsack implements ItemsStorage {
+@Value
+public class Knapsack {
 
-    private int capacity;
+    int capacity;
 
-    private int totalPrice;
+    int totalPrice;
 
-    private List<Item> items;
+    List<Item> items;
 }

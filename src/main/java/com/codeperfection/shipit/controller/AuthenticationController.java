@@ -21,7 +21,7 @@ public class AuthenticationController {
 
     public static final String SIGN_UP_PATH = "/sign-up";
 
-    private AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
 
     public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;

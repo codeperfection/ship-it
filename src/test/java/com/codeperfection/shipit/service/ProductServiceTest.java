@@ -44,7 +44,7 @@ public class ProductServiceTest {
     private ProductService productService;
 
     @Test
-    public void createProductIfValidDtoSavesEntity() {
+    public void createProduct_IfValidDto_SavesEntity() {
         final var createProductDto = ProductFixtureFactory.createCreateProductDto();
         final var productDto = ProductFixtureFactory.createProductDto();
         final var product = ProductFixtureFactory.createProduct();
@@ -57,8 +57,8 @@ public class ProductServiceTest {
         verify(productRepository).save(productArgumentCaptor.capture());
         final var savedProduct = productArgumentCaptor.getValue();
 
-        assertThat(savedProduct).isEqualToIgnoringGivenFields(product,
-                "user", "uuid", "createdAt");
+        assertThat(savedProduct).usingRecursiveComparison().ignoringFields("user", "uuid", "createdAt")
+                .isEqualTo(product);
         assertThat(savedProduct.getCreatedAt()).isCloseToUtcNow(within(10, ChronoUnit.SECONDS));
         assertThat(savedProduct.getUser().getUuid()).isEqualTo(authenticatedUser.getUuid());
 
@@ -67,7 +67,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void getProductsReturnsPaginatedDtos() {
+    public void getProducts_ReturnsPaginatedDtos() {
         final var paginationFilterDto = new PaginationFilterDto(2, 1);
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var databasePage = new PageImpl<>(List.of(ProductFixtureFactory.createProduct()));
@@ -83,7 +83,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void getProductIfNotFoundThrowsException() {
+    public void getProduct_IfNotFound_ThrowsException() {
         final var nonExistingUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -97,7 +97,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void getProductIfFoundReturnsDto() {
+    public void getProduct_IfFound_ReturnsDto() {
         final var product = ProductFixtureFactory.createProduct();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(Optional.of(product)).when(productRepository).findByUuidAndUser(product.getUuid(),
@@ -110,7 +110,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void updateProductIfNotFoundThrowsException() {
+    public void updateProduct_IfNotFound_ThrowsException() {
         final var nonExistingUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -124,7 +124,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void updateProductIfNotActiveThrowsException() {
+    public void updateProduct_IfNotActive_ThrowsException() {
         final var productUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -139,7 +139,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void updateProductIfNothingToChangeNoRepositoryCall() {
+    public void updateProduct_IfNothingToChange_NoRepositoryCall() {
         final var productUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -156,7 +156,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void updateProductIfChangeNeededDependenciesCalled() {
+    public void updateProduct_IfChangeNeeded_DependenciesCalled() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var product = ProductFixtureFactory.createProduct();
@@ -168,8 +168,8 @@ public class ProductServiceTest {
 
         final var expectedUpdateResult = productService.updateProduct(productUuid, updateProductDto, authenticatedUser);
 
-        assertThat(expectedUpdateResult).isEqualToComparingOnlyGivenFields(updateProductDto,
-                "name", "volume", "price");
+        assertThat(expectedUpdateResult).usingRecursiveComparison().ignoringFields("uuid", "countInStock")
+                .isEqualTo(updateProductDto);
         assertThat(expectedUpdateResult.getUuid()).isNotEqualTo(productUuid);
         assertThat(expectedUpdateResult.getCountInStock()).isEqualTo(countInStock);
 
@@ -184,15 +184,16 @@ public class ProductServiceTest {
 
         final var savedNewProduct = productCaptor.getAllValues().get(1);
         assertThat(savedNewProduct.getUuid()).isNotEqualTo(productUuid);
-        assertThat(savedNewProduct).isEqualToComparingOnlyGivenFields(updateProductDto,
-                "name", "volume", "price");
+        assertThat(savedNewProduct.getName()).isEqualTo(updateProductDto.getName());
+        assertThat(savedNewProduct.getVolume()).isEqualTo(updateProductDto.getVolume());
+        assertThat(savedNewProduct.getPrice()).isEqualTo(updateProductDto.getPrice());
         assertThat(savedNewProduct.getCountInStock()).isEqualTo(countInStock);
 
         verifyNoMoreInteractions(productRepository);
     }
 
     @Test
-    public void updateCountInStockIfNotFoundThrowsException() {
+    public void updateCountInStock_IfNotFound_ThrowsException() {
         final var nonExistingUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -206,7 +207,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void updateCountInStockIfNotActiveThrowsException() {
+    public void updateCountInStock_IfNotActive_ThrowsException() {
         final var productUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -221,7 +222,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void updateCountInStockIfNothingToChangeNoRepositoryCall() {
+    public void updateCountInStock_IfNothingToChangeNo_RepositoryCall() {
         final var productUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -238,7 +239,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void updateCountInStockIfChangeNeededDependenciesCalled() {
+    public void updateCountInStock_IfChangeNeeded_DependenciesCalled() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var product = ProductFixtureFactory.createProduct();
@@ -262,7 +263,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void deleteProductIfNotFoundThrowsException() {
+    public void deleteProduct_IfNotFound_ThrowsException() {
         final var nonExistingUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -276,7 +277,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void deleteProductIfNotActiveThrowsException() {
+    public void deleteProduct_IfNotActive_ThrowsException() {
         final var productUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -291,7 +292,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void deleteProductIfFoundDependenciesCalled() {
+    public void deleteProduct_IfFound_DependenciesCalled() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var product = ProductFixtureFactory.createProduct();

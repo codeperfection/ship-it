@@ -11,7 +11,7 @@ public class CommonServiceUtilTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void applyChangeIfNeededOnNullUpdateValueDoesNotApplyAndReturnsFalse() {
+    public void applyChangeIfNeeded_OnNullUpdateValue_DoesNotApplyAndReturnsFalse() {
         final Integer existingValue = 5;
         final Integer updateValue = null;
         final Consumer<Integer> setter = mock(Consumer.class);
@@ -23,7 +23,7 @@ public class CommonServiceUtilTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void applyChangeIfNeededOnEqualValuesDoesNothingAndReturnsFalse() {
+    public void applyChangeIfNeeded_OnEqualValues_DoesNothingAndReturnsFalse() {
         final Integer existingValue = 5;
         final Integer updateValue = 5;
         final Consumer<Integer> setter = mock(Consumer.class);
@@ -35,7 +35,7 @@ public class CommonServiceUtilTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void applyChangeIfNeededOnNotEqualValuesApplyTheChangeAndReturnTrue() {
+    public void applyChangeIfNeeded_OnNotEqualValues_ApplyTheChangeAndReturnTrue() {
         final Integer existingValue = 5;
         final Integer updateValue = 4;
         final Consumer<Integer> setter = mock(Consumer.class);

@@ -13,7 +13,7 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 public class UpdateProductDto {
 
-    // Not blank and not empty, but can be null.
+    // Not blank and not empty, but can be null
     @Pattern(regexp = "(.|\\s)*\\S(.|\\s)*")
     @Size(max = 256)
     private String name;

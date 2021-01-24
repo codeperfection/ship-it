@@ -3,7 +3,7 @@ package com.codeperfection.shipit.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
- import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.UUID;
@@ -11,7 +11,7 @@ import java.util.UUID;
 @Component
 public class JwtTokenProvider {
 
-    private JwtProperties jwtProperties;
+    private final JwtProperties jwtProperties;
 
     public JwtTokenProvider(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;

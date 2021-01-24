@@ -30,7 +30,7 @@ public class JwtAuthenticationEntryPointTest {
             new JwtAuthenticationEntryPoint(objectMapper);
 
     @Test
-    public void handleAuthenticationExceptionWritesErrorResponse() throws Exception {
+    public void handleAuthenticationException_WritesErrorResponse() throws Exception {
         final var exception = new JwtTokenInvalidatedException("jwtToken");
         jwtAuthenticationEntryPoint.handleAuthenticationException(exception, httpServletResponse);
 
@@ -46,7 +46,7 @@ public class JwtAuthenticationEntryPointTest {
     }
 
     @Test
-    public void commenceWritesErrorResponse() {
+    public void commence_WritesErrorResponse() {
         var jwtAuthenticationEntryPoint = spy(this.jwtAuthenticationEntryPoint);
         var exception = mock(AuthenticationException.class);
         doNothing().when(jwtAuthenticationEntryPoint).handleAuthenticationException(exception, httpServletResponse);

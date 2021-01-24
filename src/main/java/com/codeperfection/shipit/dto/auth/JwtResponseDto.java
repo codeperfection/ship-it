@@ -5,11 +5,11 @@ import lombok.Value;
 @Value
 public class JwtResponseDto {
 
-    private String accessToken;
+    String accessToken;
 
-    private String subject;
+    String subject;
 
-    private String tokenType = "bearer";
+    String tokenType = "bearer";
 
-    private Long expiresIn;
+    Long expiresIn;
 }

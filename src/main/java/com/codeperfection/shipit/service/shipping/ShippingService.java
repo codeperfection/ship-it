@@ -25,13 +25,13 @@ import java.util.stream.Collectors;
 @Service
 public class ShippingService {
 
-    private ShippingHelperComponent shippingHelperComponent;
+    private final ShippingHelperComponent shippingHelperComponent;
 
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-    private TransporterRepository transporterRepository;
+    private final TransporterRepository transporterRepository;
 
-    private ShippingRepository shippingRepository;
+    private final ShippingRepository shippingRepository;
 
     public ShippingService(ShippingHelperComponent shippingHelperComponent,
                            ProductRepository productRepository, TransporterRepository transporterRepository,

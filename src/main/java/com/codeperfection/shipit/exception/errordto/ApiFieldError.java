@@ -13,7 +13,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class ApiFieldError extends ApiError {
 
-    private List<FieldErrorInfo> fieldErrors;
+    private final List<FieldErrorInfo> fieldErrors;
 
     public ApiFieldError(OffsetDateTime timestamp, Integer status, ErrorType errorType, String message,
                          List<FieldErrorInfo> fieldErrors) {
@@ -23,8 +23,8 @@ public class ApiFieldError extends ApiError {
 
     @Value
     public static class FieldErrorInfo {
-        private String fieldName;
-        public String errorMessage;
+        String fieldName;
+        String errorMessage;
     }
 
     public static ApiFieldError badRequest(String message, List<FieldErrorInfo> fieldErrorInfos) {

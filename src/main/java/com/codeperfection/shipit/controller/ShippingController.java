@@ -25,7 +25,7 @@ public class ShippingController {
 
     static final String SHIPPING_UUID_PATH = "/{shippingUuid}";
 
-    private ShippingService shippingService;
+    private final ShippingService shippingService;
 
     public ShippingController(ShippingService shippingService) {
         this.shippingService = shippingService;

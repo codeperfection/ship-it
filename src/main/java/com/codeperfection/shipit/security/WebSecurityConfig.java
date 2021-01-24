@@ -24,11 +24,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private SecurityUserDetailsService userDetailsService;
+    private final SecurityUserDetailsService userDetailsService;
 
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     public WebSecurityConfig(SecurityUserDetailsService userDetailsService,
                              JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,

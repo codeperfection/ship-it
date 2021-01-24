@@ -1,9 +1,9 @@
 # Ship it!
 
-ShipIt! is backend service written in Java and Spring Boot. It represents a platform where users can create shippings
+ShipIt! is a backend service written in Java and Spring Boot. It represents a platform where users can create shippings
 using items available in the stock and a transporter. Each transporter has a maximum capacity, items have a volume and a
 price. Given all the items available in stock and a transporter, the goal is to determine the number of some items to
-include in the transporter, so that the total volume is less than or equal to the transporter capacity and the total
+include in the transporter, so that the total volume is less than or equal to the transporter capacity, and the total
 price value is as large as possible.
 
 ## Used technologies
@@ -11,7 +11,7 @@ price value is as large as possible.
 The following technologies have been used:
 - Java 11
 - Spring Boot 2
-- PostgreSQL 12
+- PostgreSQL 13
 
 The service is fully stateless with a custom JWT based authentication filter.
 
@@ -27,9 +27,9 @@ purposes.
 
 The project can be built and run in a number of ways described below. Depending on which way you choose, you'll need
 a subset of the following installed on your machine:
-- Docker 19.03
+- Docker 20.10
 - JDK 11
-- PostgreSQL 12
+- PostgreSQL 13
 
 ### Build and run with docker
 

@@ -11,13 +11,13 @@ import java.time.ZoneOffset;
 @AllArgsConstructor
 public class ApiError {
 
-    OffsetDateTime timestamp;
+    private final OffsetDateTime timestamp;
 
-    Integer status;
+    private final Integer status;
 
-    ErrorType errorType;
+    private final ErrorType errorType;
 
-    String message;
+    private final String message;
 
     public static ApiError badRequest(ErrorType errorType, String message) {
         return new ApiError(OffsetDateTime.now(ZoneOffset.UTC), HttpStatus.BAD_REQUEST.value(), errorType, message);

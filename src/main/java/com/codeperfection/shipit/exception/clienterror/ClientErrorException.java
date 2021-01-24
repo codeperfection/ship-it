@@ -7,9 +7,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 public abstract class ClientErrorException extends RuntimeException {
 
-    private int status;
+    private final int status;
 
-    private ErrorType errorType;
+    private final ErrorType errorType;
 
     public ClientErrorException(String message, HttpStatus httpStatus, ErrorType errorType) {
         super(message);

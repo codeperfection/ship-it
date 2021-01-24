@@ -1,4 +1,4 @@
-FROM gradle:6.0.1-jdk11 as build
+FROM gradle:6.7.1-jdk11 as build
 COPY . /app
 RUN addgroup shipit \ 
     && adduser --system --disabled-password --no-create-home --shell /bin/false --home /app --group shipit \

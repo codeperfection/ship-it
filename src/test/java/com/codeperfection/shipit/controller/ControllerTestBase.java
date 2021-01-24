@@ -40,7 +40,7 @@ public class ControllerTestBase {
     @MockBean
     private JwtTokenProvider jwtTokenProvider;
 
-    private String jwtToken = "token";
+    private final String jwtToken = "token";
 
     protected AuthenticatedUser authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
 

@@ -27,7 +27,7 @@ public class TransporterController {
 
     static final String TRANSPORTER_UUID_PATH = "/{transporterUuid}";
 
-    private TransporterService transporterService;
+    private final TransporterService transporterService;
 
     public TransporterController(TransporterService transporterService) {
         this.transporterService = transporterService;

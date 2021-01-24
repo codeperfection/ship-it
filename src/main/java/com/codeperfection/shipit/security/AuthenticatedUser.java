@@ -14,17 +14,17 @@ import java.util.UUID;
 @EqualsAndHashCode(of = "uuid")
 public class AuthenticatedUser implements UserDetails {
 
-    private String username;
+    private final String username;
 
-    private String password;
-
-    @Getter
-    private UUID uuid;
+    private final String password;
 
     @Getter
-    private OffsetDateTime passwordChangeDate;
+    private final UUID uuid;
 
-    private Collection<? extends GrantedAuthority> authorities;
+    @Getter
+    private final OffsetDateTime passwordChangeDate;
+
+    private final Collection<? extends GrantedAuthority> authorities;
 
     @Override
     public String getUsername() {

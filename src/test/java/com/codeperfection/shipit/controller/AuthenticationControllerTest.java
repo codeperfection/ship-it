@@ -24,7 +24,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
     private AuthenticationService authenticationService;
 
     @Test
-    public void signInIfInvalidPayloadReturnsError() throws Exception {
+    public void signIn_IfInvalidPayload_ReturnsError() throws Exception {
         final var signInDto = new SignInDto("", "");
         mockMvc.perform(post(API_V1 + SIGN_IN_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -37,7 +37,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void signInIfValidPayloadReturnsToken() throws Exception {
+    public void signIn_IfValidPayload_ReturnsToken() throws Exception {
         final var signInDto = AuthenticationFixtureFactory.createSignInDto();
         final var jwtResponseDto = AuthenticationFixtureFactory.createJwtResponseDto();
         doReturn(jwtResponseDto).when(authenticationService).generateJwtToken(signInDto);
@@ -51,7 +51,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void signUpIfInvalidPayloadReturnsError() throws Exception {
+    public void signUp_IfInvalidPayload_ReturnsError() throws Exception {
         final var signUpDto = new SignUpDto("!@#", "p", "invalidEmail", "");
         mockMvc.perform(post(API_V1 + SIGN_UP_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -64,7 +64,7 @@ public class AuthenticationControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void signUpIfValidPayloadReturnsUserDto() throws Exception {
+    public void signUp_IfValidPayload_ReturnsUserDto() throws Exception {
         final var signUpDto = AuthenticationFixtureFactory.createSignUpDto();
         final var userDto = AuthenticationFixtureFactory.createUserDto();
         doReturn(userDto).when(authenticationService).signUpUser(signUpDto);

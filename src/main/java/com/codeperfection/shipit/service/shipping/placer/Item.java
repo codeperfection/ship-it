@@ -6,11 +6,11 @@ import lombok.Value;
 @Value
 public class Item {
 
-    private Product product;
+    Product product;
 
-    private Integer volume;
+    int volume;
 
-    private Integer price;
+    int price;
 
     public static Item valueOf(Product product) {
         return new Item(product, product.getVolume(), product.getPrice());

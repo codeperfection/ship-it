@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 @Service
 public class TransporterService {
 
-    private TransporterRepository transporterRepository;
+    private final TransporterRepository transporterRepository;
 
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     public TransporterService(TransporterRepository transporterRepository, ModelMapper modelMapper) {
         this.transporterRepository = transporterRepository;

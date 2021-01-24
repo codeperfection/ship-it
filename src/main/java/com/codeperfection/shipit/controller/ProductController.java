@@ -30,7 +30,7 @@ public class ProductController {
 
     static final String COUNT_IN_STOCK_PATH = "/count-in-stock";
 
-    private ProductService productService;
+    private final ProductService productService;
 
     public ProductController(ProductService productService) {
         this.productService = productService;

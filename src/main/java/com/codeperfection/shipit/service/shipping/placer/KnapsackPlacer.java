@@ -8,7 +8,7 @@ import java.util.List;
 @Component
 public class KnapsackPlacer {
 
-    public ItemsStorage place(Item[] items, int capacity) {
+    public Knapsack place(Item[] items, int capacity) {
         final int[][] maxTotalPrices = calculateMaxTotalPrices(items, capacity);
         int maxTotalPrice = maxTotalPrices[items.length][capacity];
         int currentCapacity = capacity;

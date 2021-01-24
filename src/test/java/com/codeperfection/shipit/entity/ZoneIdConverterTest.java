@@ -16,23 +16,23 @@ public class ZoneIdConverterTest {
     private ZoneIdConverter zoneIdConverter;
 
     @Test
-    public void convertToDatabaseColumnIfNullGivenReturnsNull() {
+    public void convertToDatabaseColumn_IfNullGiven_ReturnsNull() {
         assertThat(zoneIdConverter.convertToDatabaseColumn(null)).isNull();
     }
 
     @Test
-    public void convertToDatabaseColumnIfValidValueProvidedReturnsStringRepresentation() {
+    public void convertToDatabaseColumn_IfValidValueProvided_ReturnsStringRepresentation() {
         String timeZoneName = "Europe/Berlin";
         assertThat(zoneIdConverter.convertToDatabaseColumn(ZoneId.of(timeZoneName))).isEqualTo(timeZoneName);
     }
 
     @Test
-    public void convertToEntityAttributeIfNullProvidedReturnsNull() {
+    public void convertToEntityAttribute_IfNullProvided_ReturnsNull() {
         assertThat(zoneIdConverter.convertToEntityAttribute(null)).isNull();
     }
 
     @Test
-    public void convertToEntityAttributeIfValidStringProvidedReturnsZoneIdRepresentation() {
+    public void convertToEntityAttribute_IfValidStringProvided_ReturnsZoneIdRepresentation() {
         String timeZoneName = "Europe/Berlin";
         assertThat(zoneIdConverter.convertToEntityAttribute(timeZoneName)).isEqualTo(ZoneId.of(timeZoneName));
     }

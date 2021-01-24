@@ -50,7 +50,7 @@ public class ShippingServiceTest {
     private ShippingService shippingService;
 
     @Test
-    public void createShippingIfTransporterNotFoundThrowsException() {
+    public void createShipping_IfTransporterNotFound_ThrowsException() {
         final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -65,7 +65,7 @@ public class ShippingServiceTest {
     }
 
     @Test
-    public void createShippingIfTransporterNotActiveThrowsException() {
+    public void createShipping_IfTransporterNotActive_ThrowsException() {
         final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var transporter = TransporterFixtureFactory.createTransporter();
@@ -82,7 +82,7 @@ public class ShippingServiceTest {
     }
 
     @Test
-    public void createShippingIfShippingPossibleReturnsDto() {
+    public void createShipping_IfShippingPossible_ReturnsDto() {
         final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var transporter = TransporterFixtureFactory.createTransporter();
@@ -111,7 +111,7 @@ public class ShippingServiceTest {
     }
 
     @Test
-    public void getShippingsReturnsPaginatedDtos() {
+    public void getShippings_ReturnsPaginatedDtos() {
         final var paginationFilterDto = new PaginationFilterDto(2, 1);
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var shipping = ShippingFixtureFactory.createShipping();
@@ -129,7 +129,7 @@ public class ShippingServiceTest {
     }
 
     @Test
-    public void getShippingIfNotFoundThrowsException() {
+    public void getShipping_IfNotFound_ThrowsException() {
         final var nonExistingUuid = UUID.fromString("613d59d8-2e4a-451a-ac4c-4fc0ac430558");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(Optional.empty()).when(shippingRepository).findByUuidAndUser(nonExistingUuid,
@@ -141,7 +141,7 @@ public class ShippingServiceTest {
     }
 
     @Test
-    public void getShippingIfFoundReturnsDto() {
+    public void getShipping_IfFound_ReturnsDto() {
         final var shipping = ShippingFixtureFactory.createShipping();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         doReturn(Optional.of(shipping)).when(shippingRepository).findByUuidAndUser(shipping.getUuid(),
@@ -156,7 +156,7 @@ public class ShippingServiceTest {
     }
 
     @Test
-    public void deleteShippingIfNotFoundThrowsException() {
+    public void deleteShipping_IfNotFound_ThrowsException() {
         final var nonExistingUuid = UUID.fromString("1f732731-6f3e-4f81-a727-d025c376dcad");
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
@@ -170,7 +170,7 @@ public class ShippingServiceTest {
     }
 
     @Test
-    public void deleteShippingIfFoundDependenciesCalled() {
+    public void deleteShipping_IfFound_DependenciesCalled() {
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
         final var user = User.withUuid(authenticatedUser.getUuid());
         final var shipping = ShippingFixtureFactory.createShipping();

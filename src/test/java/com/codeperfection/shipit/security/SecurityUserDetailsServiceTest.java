@@ -27,7 +27,7 @@ public class SecurityUserDetailsServiceTest {
     private SecurityUserDetailsService securityUserDetailsService;
 
     @Test
-    public void loadUserByUsernameIfNotFoundThrowsException() {
+    public void loadUserByUsername_IfNotFound_ThrowsException() {
         String nonExistingUser = "nonExistingUser";
         doReturn(Optional.empty()).when(userRepository).findByUsernameOrEmail(nonExistingUser, nonExistingUser);
         assertThatExceptionOfType(UsernameNotFoundException.class).isThrownBy(() ->
@@ -35,17 +35,17 @@ public class SecurityUserDetailsServiceTest {
     }
 
     @Test
-    public void loadUserByUsernameIfFoundReturnsDto() {
+    public void loadUserByUsername_IfFound_ReturnsDto() {
         final var user = AuthenticationFixtureFactory.createUser();
         doReturn(Optional.of(user)).when(userRepository).findByUsernameOrEmail(user.getUsername(), user.getUsername());
 
         final var userDetails = securityUserDetailsService.loadUserByUsername(user.getUsername());
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        assertThat(userDetails).isEqualToComparingFieldByField(authenticatedUser);
+        assertThat(userDetails).usingRecursiveComparison().isEqualTo(authenticatedUser);
     }
 
     @Test
-    public void loadUserByUuidIfNotFoundThrowsException() {
+    public void loadUserByUuid_IfNotFound_ThrowsException() {
         UUID nonExistingUuid = UUID.fromString("3c8e46d4-ae6a-46d7-8d4a-660ea5231495");
         doReturn(Optional.empty()).when(userRepository).findById(nonExistingUuid);
         assertThatExceptionOfType(UserNotFoundException.class).isThrownBy(() ->
@@ -53,13 +53,13 @@ public class SecurityUserDetailsServiceTest {
     }
 
     @Test
-    public void loadUserByUuidIfFoundReturnsDto() {
+    public void loadUserByUuid_IfFound_ReturnsDto() {
         final var user = AuthenticationFixtureFactory.createUser();
         doReturn(Optional.of(user)).when(userRepository).findById(user.getUuid());
 
         final var userDetails = securityUserDetailsService.loadUserByUuid(user.getUuid());
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
-        assertThat(userDetails).isEqualToIgnoringGivenFields(authenticatedUser, "password");
+        assertThat(userDetails).usingRecursiveComparison().ignoringFields("password").isEqualTo(authenticatedUser);
         assertThat(userDetails.getPassword()).isNull();
     }
 }

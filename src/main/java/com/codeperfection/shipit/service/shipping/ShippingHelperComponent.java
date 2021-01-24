@@ -22,13 +22,13 @@ import java.util.stream.IntStream;
 @Component
 class ShippingHelperComponent {
 
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-    private ShippingRepository shippingRepository;
+    private final ShippingRepository shippingRepository;
 
-    private KnapsackPlacer knapsackPlacer;
+    private final KnapsackPlacer knapsackPlacer;
 
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     ShippingHelperComponent(ProductRepository productRepository, ShippingRepository shippingRepository,
                             KnapsackPlacer knapsackPlacer, ModelMapper modelMapper) {

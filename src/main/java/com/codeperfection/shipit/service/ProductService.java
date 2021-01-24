@@ -26,9 +26,9 @@ import java.util.stream.Collectors;
 @Service
 public class ProductService {
 
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     public ProductService(ProductRepository productRepository, ModelMapper modelMapper) {
         this.productRepository = productRepository;
@@ -74,7 +74,7 @@ public class ProductService {
 
         final var newProduct = createNewVersion(currentProduct, user);
         if (applyChanges(newProduct, updateProductDto)) {
-            removeStockAndDeactivate(currentProduct);
+            removeFromStockAndDeactivate(currentProduct);
             productRepository.save(newProduct);
             return mapToDto(newProduct);
         }
@@ -146,14 +146,13 @@ public class ProductService {
     private boolean applyChanges(Product product, UpdateProductDto updateDto) {
         boolean changed = CommonServiceUtil.applyChangeIfNeeded(
                 product.getName(), updateDto.getName(), product::setName);
-        changed |= CommonServiceUtil.applyChangeIfNeeded(
-                product.getPrice(), updateDto.getPrice(), product::setPrice);
+        changed |= CommonServiceUtil.applyChangeIfNeeded(product.getPrice(), updateDto.getPrice(), product::setPrice);
         changed |= CommonServiceUtil.applyChangeIfNeeded(
                 product.getVolume(), updateDto.getVolume(), product::setVolume);
         return changed;
     }
 
-    private void removeStockAndDeactivate(Product product) {
+    private void removeFromStockAndDeactivate(Product product) {
         product.setCountInStock(0);
         deactivate(product);
     }

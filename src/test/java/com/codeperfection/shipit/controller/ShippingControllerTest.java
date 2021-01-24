@@ -29,13 +29,13 @@ public class ShippingControllerTest extends ControllerTestBase {
     private ShippingService shippingService;
 
     @Test
-    public void createShippingIfNotAuthenticatedReturnsError() throws Exception {
+    public void createShipping_IfNotAuthenticated_ReturnsError() throws Exception {
         checkUnauthorizedResponse(post(API_V1 + SHIPPINGS_PATH));
         verifyNoMoreInteractions(shippingService);
     }
 
     @Test
-    public void createShippingIfInvalidPayloadReturnsError() throws Exception {
+    public void createShipping_IfInvalidPayload_ReturnsError() throws Exception {
         mockAuthentication();
         final var createShippingDto = new CreateShippingDto("", null, null);
         mockMvc.perform(post(API_V1 + SHIPPINGS_PATH)
@@ -50,7 +50,7 @@ public class ShippingControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void createShippingIfValidPayloadReturnsDto() throws Exception {
+    public void createShipping_IfValidPayload_ReturnsDto() throws Exception {
         mockAuthentication();
         final var createShippingDto = ShippingFixtureFactory.createCreateShippingDto();
         final var authenticatedUser = AuthenticationFixtureFactory.createAuthenticatedUser();
@@ -68,13 +68,13 @@ public class ShippingControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void getShippingsIfNotAuthenticatedReturnsError() throws Exception {
+    public void getShippings_IfNotAuthenticated_ReturnsError() throws Exception {
         checkUnauthorizedResponse(get(API_V1 + SHIPPINGS_PATH));
         verifyNoMoreInteractions(shippingService);
     }
 
     @Test
-    public void getShippingsIfInvalidPaginationReturnsError() throws Exception {
+    public void getShippings_IfInvalidPagination_ReturnsError() throws Exception {
         mockAuthentication();
         final var invalidPaginationFilterDto = new PaginationFilterDto(-1, 0);
         mockMvc.perform(get(API_V1 + SHIPPINGS_PATH)
@@ -89,7 +89,7 @@ public class ShippingControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void getShippingsIfValidPaginationReturnsPageDto() throws Exception {
+    public void getShippings_IfValidPagination_ReturnsPageDto() throws Exception {
         mockAuthentication();
         final var paginationFilterDto = CommonFixtureFactory.createPaginationFilterDto();
         final var shippingDto = ShippingFixtureFactory.createShippingDto();
@@ -106,21 +106,21 @@ public class ShippingControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void getShippingIfNotAuthenticatedReturnsError() throws Exception {
+    public void getShipping_IfNotAuthenticated_ReturnsError() throws Exception {
         final var shippingUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
         checkUnauthorizedResponse(get(API_V1 + SHIPPINGS_PATH + "/" + shippingUuid));
         verifyNoMoreInteractions(shippingService);
     }
 
     @Test
-    public void getShippingIfInvalidPathVariableReturnsError() throws Exception {
+    public void getShipping_IfInvalidPathVariable_ReturnsError() throws Exception {
         checkBadRequestResponseOnInvalidPathVariable(get(API_V1 + SHIPPINGS_PATH + "/" +
                 "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
         verifyNoMoreInteractions(shippingService);
     }
 
     @Test
-    public void getShippingIfValidUuidReturnsDto() throws Exception {
+    public void getShipping_IfValidUuid_ReturnsDto() throws Exception {
         mockAuthentication();
         final var shippingDto = ShippingFixtureFactory.createShippingDto();
         doReturn(shippingDto).when(shippingService).getShipping(shippingDto.getUuid(), authenticatedUser);
@@ -135,21 +135,21 @@ public class ShippingControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void deleteShippingIfNotAuthenticatedReturnsError() throws Exception {
+    public void deleteShipping_IfNotAuthenticated_ReturnsError() throws Exception {
         final var shippingUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
         checkUnauthorizedResponse(delete(API_V1 + SHIPPINGS_PATH + "/" + shippingUuid));
         verifyNoMoreInteractions(shippingService);
     }
 
     @Test
-    public void deleteShippingIfInvalidPathVariableReturnsError() throws Exception {
+    public void deleteShipping_IfInvalidPathVariable_ReturnsError() throws Exception {
         final var shippingUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
         checkUnauthorizedResponse(get(API_V1 + SHIPPINGS_PATH + "/" + shippingUuid));
         verifyNoMoreInteractions(shippingService);
     }
 
     @Test
-    public void deleteShippingReturnsSuccessfulStatus() throws Exception {
+    public void deleteShipping_ReturnsSuccessfulStatus() throws Exception {
         mockAuthentication();
         final var shippingUuid = UUID.randomUUID();
         mockMvc.perform(delete(API_V1 + SHIPPINGS_PATH + "/" + shippingUuid.toString())

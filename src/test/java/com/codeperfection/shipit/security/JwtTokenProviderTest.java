@@ -16,7 +16,7 @@ public class JwtTokenProviderTest {
             new JwtProperties("someSecret", jwtExpirationMillis));
 
     @Test
-    public void generateTokenWithAuthenticationReturnsValidToken() {
+    public void generateToken_WithAuthentication_ReturnsValidToken() {
         UUID userUuid = AuthenticationFixtureFactory.createAuthenticatedUser().getUuid();
         String token = jwtTokenProvider.generateToken(userUuid);
         var claims = jwtTokenProvider.getTokenClaims(token);
@@ -29,7 +29,7 @@ public class JwtTokenProviderTest {
     }
 
     @Test
-    public void getJwtExpirationInSecondsReturnsCorrectNumber() {
+    public void getJwtExpirationInSeconds_ReturnsCorrectNumber() {
         assertThat(jwtTokenProvider.getJwtExpirationInSeconds()).isEqualTo(20);
     }
 }

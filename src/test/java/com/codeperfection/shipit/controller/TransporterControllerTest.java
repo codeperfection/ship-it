@@ -30,13 +30,13 @@ public class TransporterControllerTest extends ControllerTestBase {
     private TransporterService transporterService;
 
     @Test
-    public void createTransporterIfNotAuthenticatedReturnsError() throws Exception {
+    public void createTransporter_IfNotAuthenticated_ReturnsError() throws Exception {
         checkUnauthorizedResponse(post(API_V1 + TRANSPORTERS_PATH));
         verifyNoInteractions(transporterService);
     }
 
     @Test
-    public void createTransporterIfInvalidPayloadReturnsError() throws Exception {
+    public void createTransporter_IfInvalidPayloadR_eturnsError() throws Exception {
         mockAuthentication();
         final var transporterDto = new TransporterDto(null, "", -1);
         mockMvc.perform(post(API_V1 + TRANSPORTERS_PATH)
@@ -51,7 +51,7 @@ public class TransporterControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void createTransporterIfValidPayloadReturnsDto() throws Exception {
+    public void createTransporter_IfValidPayload_ReturnsDto() throws Exception {
         mockAuthentication();
         final var createTransporterDto = TransporterFixtureFactory.createCreateTransporterDto();
         final var transporterDto = TransporterFixtureFactory.createTransporterDto();
@@ -70,13 +70,13 @@ public class TransporterControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void getTransportersIfNotAuthenticatedReturnsError() throws Exception {
+    public void getTransporters_IfNotAuthenticated_ReturnsError() throws Exception {
         checkUnauthorizedResponse(get(API_V1 + TRANSPORTERS_PATH));
         verifyNoInteractions(transporterService);
     }
 
     @Test
-    public void getTransportersIfInvalidPaginationReturnsError() throws Exception {
+    public void getTransporters_IfInvalidPagination_ReturnsError() throws Exception {
         mockAuthentication();
         final var invalidPaginationFilterDto = new PaginationFilterDto(-1, 0);
         mockMvc.perform(get(API_V1 + TRANSPORTERS_PATH)
@@ -91,7 +91,7 @@ public class TransporterControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void getTransportersIfValidPaginationReturnsPageDto() throws Exception {
+    public void getTransporters_IfValidPagination_ReturnsPageDto() throws Exception {
         mockAuthentication();
         final var paginationFilterDto = CommonFixtureFactory.createPaginationFilterDto();
         final var transporterDto = TransporterFixtureFactory.createTransporterDto();
@@ -108,21 +108,21 @@ public class TransporterControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void getTransporterIfNotAuthenticatedReturnsError() throws Exception {
+    public void getTransporter_IfNotAuthenticated_ReturnsError() throws Exception {
         final var transporterUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
         checkUnauthorizedResponse(get(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid));
         verifyNoInteractions(transporterService);
     }
 
     @Test
-    public void getTransporterIfInvalidPathVariableReturnsError() throws Exception {
+    public void getTransporter_IfInvalidPathVariable_ReturnsError() throws Exception {
         checkBadRequestResponseOnInvalidPathVariable(get(API_V1 + TRANSPORTERS_PATH + "/" +
                 "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
         verifyNoMoreInteractions(transporterService);
     }
 
     @Test
-    public void getTransporterIfValidUuidReturnsDto() throws Exception {
+    public void getTransporter_IfValidUuid_ReturnsDto() throws Exception {
         mockAuthentication();
         final var transporterDto = TransporterFixtureFactory.createTransporterDto();
         doReturn(transporterDto).when(transporterService).getTransporter(transporterDto.getUuid(), authenticatedUser);
@@ -137,21 +137,21 @@ public class TransporterControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void updateTransporterIfNotAuthenticatedReturnsError() throws Exception {
+    public void updateTransporter_IfNotAuthenticated_ReturnsError() throws Exception {
         final var transporterUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
         checkUnauthorizedResponse(put(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid));
         verifyNoInteractions(transporterService);
     }
 
     @Test
-    public void updateTransporterIfInvalidPathVariableReturnsError() throws Exception {
+    public void updateTransporter_IfInvalidPathVariable_ReturnsError() throws Exception {
         checkBadRequestResponseOnInvalidPathVariable(put(API_V1 + TRANSPORTERS_PATH + "/" +
                 "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
         verifyNoMoreInteractions(transporterService);
     }
 
     @Test
-    public void updateTransporterIfInvalidPayloadReturnsError() throws Exception {
+    public void updateTransporter_IfInvalidPayload_ReturnsError() throws Exception {
         mockAuthentication();
         final var transporterUuid = UUID.randomUUID();
         final var updateTransporterDto = new UpdateTransporterDto("", -1);
@@ -169,7 +169,7 @@ public class TransporterControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void updateTransporterIfValidPayloadReturnsDto() throws Exception {
+    public void updateTransporter_IfValidPayload_ReturnsDto() throws Exception {
         mockAuthentication();
         final var transporterUuid = UUID.randomUUID();
         final var updateTransporterDto = new UpdateTransporterDto("a", 1);
@@ -192,21 +192,21 @@ public class TransporterControllerTest extends ControllerTestBase {
     }
 
     @Test
-    public void deleteTransporterIfNotAuthenticatedReturnsError() throws Exception {
+    public void deleteTransporter_IfNotAuthenticated_ReturnsError() throws Exception {
         final var transporterUuid = UUID.fromString("86bc3ac7-7ba5-446c-a751-9a525f7b2378");
         checkUnauthorizedResponse(delete(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid));
         verifyNoInteractions(transporterService);
     }
 
     @Test
-    public void deleteTransporterIfInvalidPathVariableReturnsError() throws Exception {
+    public void deleteTransporter_IfInvalidPathVariable_ReturnsError() throws Exception {
         checkBadRequestResponseOnInvalidPathVariable(delete(API_V1 + TRANSPORTERS_PATH + "/" +
                 "InvalidUuid86bc3ac7-7ba5-446c-a751-9a525f7b2378"));
         verifyNoMoreInteractions(transporterService);
     }
 
     @Test
-    public void deleteTransporterReturnsSuccessfulStatus() throws Exception {
+    public void deleteTransporter_ReturnsSuccessfulStatus() throws Exception {
         mockAuthentication();
         final var transporterUuid = UUID.randomUUID();
         mockMvc.perform(delete(API_V1 + TRANSPORTERS_PATH + "/" + transporterUuid.toString())

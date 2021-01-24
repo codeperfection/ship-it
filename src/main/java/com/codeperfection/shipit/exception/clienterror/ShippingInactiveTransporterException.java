@@ -8,8 +8,7 @@ import java.util.UUID;
 public class ShippingInactiveTransporterException extends ClientErrorException {
 
     public ShippingInactiveTransporterException(UUID transporterUuid) {
-        super(String.format("Transporter with '%s' identifier is inactive, " +
-                        "thus it cannot be used in shipping creation", transporterUuid),
-                HttpStatus.CONFLICT, ErrorType.SHIPPING_IMPOSSIBLE);
+        super(String.format("Transporter with '%s' identifier is inactive, it can't be used in shipping creation",
+                transporterUuid), HttpStatus.CONFLICT, ErrorType.SHIPPING_IMPOSSIBLE);
     }
 }

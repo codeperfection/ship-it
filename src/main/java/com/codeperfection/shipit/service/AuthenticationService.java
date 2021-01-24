@@ -29,17 +29,17 @@ import java.util.UUID;
 @Service
 public class AuthenticationService {
 
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
-    private JwtTokenProvider tokenProvider;
+    private final JwtTokenProvider tokenProvider;
 
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     public AuthenticationService(AuthenticationManager authenticationManager, UserRepository userRepository,
                                  RoleRepository roleRepository, JwtTokenProvider tokenProvider,
