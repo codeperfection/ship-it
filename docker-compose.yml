@@ -1,0 +1,26 @@
+services:
+
+  ship_it_app_service:
+    container_name: ship_it_app
+    build: .
+    image: codeperfection/ship_it:latest
+    restart: on-failure:3
+    depends_on:
+      - ship_it_db_service
+    ports:
+      - "8082:8082"
+
+  ship_it_db_service:
+    container_name: ship_it_db
+    image: postgres:16-alpine
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=ship_it_db
+      - POSTGRES_USER=master
+      - POSTGRES_PASSWORD=ydAPnmSzWvMvquvsEPhDEmYwBEKnw6jT
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data: { }
