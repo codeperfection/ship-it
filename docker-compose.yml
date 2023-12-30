@@ -1,16 +1,34 @@
 services:
 
-  ship_it_app_service:
+  ship-it-app-service:
     container_name: ship_it_app
     build: .
     image: codeperfection/ship_it:latest
     restart: on-failure:3
     depends_on:
-      - ship_it_db_service
+      - ship-it-db-service
+      - auth-app-service
+    environment:
+      # below environment configuration is used to do remote debugging of service
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     ports:
       - "8082:8082"
+      # below port is open to connect with remote debugger
+      - "5005:5005"
 
-  ship_it_db_service:
+  auth-app-service:
+    container_name: auth_app
+    image: codeperfection/auth-service
+    restart: on-failure:3
+    depends_on:
+      - auth-db-service
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
+    ports:
+      - "8081:8081"
+      - "5006:5006"
+
+  ship-it-db-service:
     container_name: ship_it_db
     image: postgres:16-alpine
     ports:
@@ -22,5 +40,18 @@ services:
     volumes:
       - ./db_data:/var/lib/postgresql/data
 
+  auth-db-service:
+    container_name: auth_db
+    image: postgres:16-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=auth_db
+      - POSTGRES_USER=master
+      - POSTGRES_PASSWORD=raHwQcbGUy7Y8I7ImVelLxaICDeF4ikH
+    volumes:
+      - ./auth_db_data:/var/lib/postgresql/data
+
 volumes:
   db_data: { }
+  auth_db_data: { }

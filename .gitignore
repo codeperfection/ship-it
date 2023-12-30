@@ -37,3 +37,4 @@ out/
 
 ### Docker DB data ###
 db_data/
+auth_db_data/

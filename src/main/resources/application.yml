@@ -14,3 +14,5 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8081
+auth-server:
+  issuer-name: https://codeperfection.auth.com
