@@ -2,7 +2,7 @@ server:
   port: 8082
 spring:
   datasource:
-    url: jdbc:postgresql://ship_it_db_service:5432/ship_it_db
+    url: jdbc:postgresql://ship-it-db-service:5432/ship_it_db
     username: master
     password: ydAPnmSzWvMvquvsEPhDEmYwBEKnw6jT
   jpa:
