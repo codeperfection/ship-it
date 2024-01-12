@@ -10,7 +10,6 @@ import com.codeperfection.shipit.repository.TransporterRepository
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Clock
@@ -20,14 +19,15 @@ import java.util.*
 @Service
 class TransporterService(
     private val transporterRepository: TransporterRepository,
+    private val authenticationService: AuthenticationService,
     private val clock: Clock
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @Transactional
-    @PreAuthorize("hasAuthority('SCOPE_shipit:write')")
     fun createTransporter(userId: UUID, createTransporterDto: CreateTransporterDto): TransporterDto {
+        authenticationService.checkWriteAccess(userId)
         logger.info("Creating transporter ${createTransporterDto.name} for user $userId")
         val now = OffsetDateTime.now(clock)
         val savedTransporter = transporterRepository.save(
@@ -46,8 +46,8 @@ class TransporterService(
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('SCOPE_shipit:read')")
     fun getTransporters(userId: UUID, paginationFilterDto: PaginationFilterDto): PageDto<TransporterDto> {
+        authenticationService.checkReadAccess(userId)
         val transportersPage = transporterRepository.findByUserIdAndIsActiveTrue(
             userId = userId,
             pageable = PageRequest.of(paginationFilterDto.page, paginationFilterDto.size, Sort.by("createdAt"))
@@ -61,16 +61,16 @@ class TransporterService(
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('SCOPE_shipit:read')")
     fun getTransporter(userId: UUID, transporterId: UUID): TransporterDto {
+        authenticationService.checkReadAccess(userId)
         val transporter = transporterRepository.findByIdAndUserIdAndIsActiveTrue(transporterId, userId)
             ?: throw NotFoundException(transporterId)
         return mapToDto(transporter)
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('SCOPE_shipit:write')")
     fun deleteTransporter(userId: UUID, transporterId: UUID) {
+        authenticationService.checkWriteAccess(userId)
         val transporter = transporterRepository.findByIdAndUserIdAndIsActiveTrue(transporterId, userId)
             ?: throw NotFoundException(transporterId)
         transporter.isActive = false

@@ -11,7 +11,6 @@ import com.codeperfection.shipit.repository.ProductRepository
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Clock
@@ -21,14 +20,15 @@ import java.util.*
 @Service
 class ProductService(
     private val productRepository: ProductRepository,
+    private val authenticationService: AuthenticationService,
     private val clock: Clock
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @Transactional
-    @PreAuthorize("hasAuthority('SCOPE_shipit:write')")
     fun createProduct(userId: UUID, createProductDto: CreateProductDto): ProductDto {
+        authenticationService.checkWriteAccess(userId)
         logger.info("Creating product ${createProductDto.name} for user $userId")
         val now = OffsetDateTime.now(clock)
         val savedProduct = productRepository.save(
@@ -49,8 +49,8 @@ class ProductService(
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('SCOPE_shipit:read')")
     fun getProducts(userId: UUID, paginationFilterDto: PaginationFilterDto): PageDto<ProductDto> {
+        authenticationService.checkReadAccess(userId)
         val productsPage = productRepository.findByUserIdAndIsActiveTrue(
             userId = userId,
             pageable = PageRequest.of(paginationFilterDto.page, paginationFilterDto.size, Sort.by("createdAt"))
@@ -64,16 +64,16 @@ class ProductService(
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('SCOPE_shipit:read')")
     fun getProduct(userId: UUID, productId: UUID): ProductDto {
+        authenticationService.checkReadAccess(userId)
         val product = productRepository.findByIdAndUserIdAndIsActiveTrue(productId, userId)
             ?: throw NotFoundException(productId)
         return mapToDto(product)
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('SCOPE_shipit:write')")
     fun updateProduct(userId: UUID, productId: UUID, updateProductDto: UpdateProductDto): ProductDto {
+        authenticationService.checkWriteAccess(userId)
         val product = productRepository.findByIdAndUserIdAndIsActiveTrue(productId, userId)
             ?: throw NotFoundException(productId)
         product.countInStock = updateProductDto.countInStock
@@ -82,8 +82,8 @@ class ProductService(
     }
 
     @Transactional
-    @PreAuthorize("hasAuthority('SCOPE_shipit:write')")
     fun deleteProduct(userId: UUID, productId: UUID) {
+        authenticationService.checkWriteAccess(userId)
         val product = productRepository.findByIdAndUserIdAndIsActiveTrue(productId, userId)
             ?: throw NotFoundException(productId)
         product.isActive = false

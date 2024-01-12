@@ -29,6 +29,9 @@ class TransporterServiceTest {
     private lateinit var transporterRepository: TransporterRepository
 
     @Mock
+    private lateinit var authenticationService: AuthenticationService
+
+    @Mock
     private lateinit var clock: Clock
 
     @InjectMocks
@@ -38,7 +41,7 @@ class TransporterServiceTest {
 
     @AfterEach
     fun tearDown() {
-        verifyNoMoreInteractions(transporterRepository)
+        verifyNoMoreInteractions(transporterRepository, authenticationService)
     }
 
     @Test
@@ -49,6 +52,7 @@ class TransporterServiceTest {
 
         val transporterDto = underTest.createTransporter(USER_ID, createTransporterDtoFixture)
 
+        verify(authenticationService).checkWriteAccess(USER_ID)
         val transporterArgumentCaptor = argumentCaptor<Transporter>()
         verify(transporterRepository).save(transporterArgumentCaptor.capture())
         val savedTransporter = transporterArgumentCaptor.firstValue
@@ -75,6 +79,7 @@ class TransporterServiceTest {
                 elements = emptyList()
             )
         )
+        verify(authenticationService).checkReadAccess(USER_ID)
         verify(transporterRepository).findByUserIdAndIsActiveTrue(USER_ID, pageRequest)
     }
 
@@ -90,6 +95,7 @@ class TransporterServiceTest {
             PageDto(totalElements = 1, totalPages = 1, elements = listOf(transporterDtoFixture))
         )
         verify(transporterRepository).findByUserIdAndIsActiveTrue(USER_ID, pageRequest)
+        verify(authenticationService).checkReadAccess(USER_ID)
     }
 
     @Test
@@ -99,6 +105,7 @@ class TransporterServiceTest {
         assertThrows<NotFoundException> {
             underTest.getTransporter(USER_ID, TRANSPORTER_ID)
         }
+        verify(authenticationService).checkReadAccess(USER_ID)
     }
 
     @Test
@@ -109,6 +116,7 @@ class TransporterServiceTest {
 
         val transporterDto = underTest.getTransporter(USER_ID, TRANSPORTER_ID)
 
+        verify(authenticationService).checkReadAccess(USER_ID)
         assertThat(transporterDto).isEqualTo(transporterDtoFixture)
     }
 
@@ -119,6 +127,7 @@ class TransporterServiceTest {
         assertThrows<NotFoundException> {
             underTest.deleteTransporter(USER_ID, TRANSPORTER_ID)
         }
+        verify(authenticationService).checkWriteAccess(USER_ID)
     }
 
     @Test
@@ -131,6 +140,7 @@ class TransporterServiceTest {
 
         underTest.deleteTransporter(USER_ID, TRANSPORTER_ID)
 
+        verify(authenticationService).checkWriteAccess(USER_ID)
         verify(transporterRepository).save(deactivatedTransporter)
     }
 }
