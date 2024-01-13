@@ -30,6 +30,9 @@ class ProductServiceTest {
     private lateinit var productRepository: ProductRepository
 
     @Mock
+    private lateinit var authorizationService: AuthorizationService
+
+    @Mock
     private lateinit var clock: Clock
 
     @InjectMocks
@@ -39,7 +42,7 @@ class ProductServiceTest {
 
     @AfterEach
     fun tearDown() {
-        verifyNoMoreInteractions(productRepository)
+        verifyNoMoreInteractions(productRepository, authorizationService, clock)
     }
 
     @Test
@@ -50,6 +53,7 @@ class ProductServiceTest {
 
         val productDto = underTest.createProduct(USER_ID, createProductDtoFixture1)
 
+        verify(authorizationService).checkWriteAccess(USER_ID)
         val productArgumentCaptor = argumentCaptor<Product>()
         verify(productRepository).save(productArgumentCaptor.capture())
         val savedProduct = productArgumentCaptor.firstValue
@@ -71,6 +75,7 @@ class ProductServiceTest {
                 elements = emptyList()
             )
         )
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(productRepository).findByUserIdAndIsActiveTrue(USER_ID, pageRequest)
     }
 
@@ -85,6 +90,7 @@ class ProductServiceTest {
         assertThat(productsPage).isEqualTo(
             PageDto(totalElements = 1, totalPages = 1, elements = listOf(productDtoFixture1))
         )
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(productRepository).findByUserIdAndIsActiveTrue(USER_ID, pageRequest)
     }
 
@@ -95,6 +101,7 @@ class ProductServiceTest {
         assertThrows<NotFoundException> {
             underTest.getProduct(USER_ID, PRODUCT_ID_1)
         }
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
     }
 
@@ -105,6 +112,7 @@ class ProductServiceTest {
         val productDto = underTest.getProduct(USER_ID, PRODUCT_ID_1)
 
         assertThat(productDto).isEqualTo(productDtoFixture1)
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
     }
 
@@ -115,6 +123,7 @@ class ProductServiceTest {
         assertThrows<NotFoundException> {
             underTest.updateProduct(USER_ID, PRODUCT_ID_1, UpdateProductDto(countInStock = 4))
         }
+        verify(authorizationService).checkWriteAccess(USER_ID)
         verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
     }
 
@@ -128,6 +137,7 @@ class ProductServiceTest {
         val productDto = underTest.updateProduct(USER_ID, PRODUCT_ID_1, UpdateProductDto(countInStock = newCountInStock))
 
         assertThat(productDto).isEqualTo(productDtoFixture1.copy(countInStock = newCountInStock))
+        verify(authorizationService).checkWriteAccess(USER_ID)
         verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
         verify(productRepository).save(updatedProduct)
     }
@@ -139,6 +149,7 @@ class ProductServiceTest {
         assertThrows<NotFoundException> {
             underTest.deleteProduct(USER_ID, PRODUCT_ID_1)
         }
+        verify(authorizationService).checkWriteAccess(USER_ID)
         verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
     }
 
@@ -150,6 +161,7 @@ class ProductServiceTest {
 
         underTest.deleteProduct(USER_ID, PRODUCT_ID_1)
 
+        verify(authorizationService).checkWriteAccess(USER_ID)
         verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
         verify(productRepository).save(deactivatedProduct)
     }

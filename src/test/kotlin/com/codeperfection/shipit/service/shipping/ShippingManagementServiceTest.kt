@@ -9,6 +9,7 @@ import com.codeperfection.shipit.fixture.USER_ID
 import com.codeperfection.shipit.fixture.createShippingFixture
 import com.codeperfection.shipit.fixture.shippingDtoFixture
 import com.codeperfection.shipit.repository.ShippingRepository
+import com.codeperfection.shipit.service.AuthorizationService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -30,12 +31,15 @@ class ShippingManagementServiceTest {
     @Mock
     private lateinit var shippingRepository: ShippingRepository
 
+    @Mock
+    private lateinit var authorizationService: AuthorizationService
+
     @InjectMocks
     private lateinit var underTest: ShippingManagementService
 
     @AfterEach
     fun tearDown() {
-        verifyNoMoreInteractions(shippingRepository)
+        verifyNoMoreInteractions(shippingRepository, authorizationService)
     }
 
     private val shippingFixture = createShippingFixture()
@@ -54,6 +58,8 @@ class ShippingManagementServiceTest {
                 elements = emptyList()
             )
         )
+
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(shippingRepository).findByUserId(USER_ID, pageRequest)
     }
 
@@ -63,10 +69,11 @@ class ShippingManagementServiceTest {
         whenever(shippingRepository.findByUserId(USER_ID, pageRequest)).thenReturn(PageImpl(listOf(shippingFixture)))
 
         val shippingsPage = underTest.getShippings(USER_ID, PaginationFilterDto())
-
         assertThat(shippingsPage).isEqualTo(
             PageDto(totalElements = 1, totalPages = 1, elements = listOf(shippingDtoFixture))
         )
+
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(shippingRepository).findByUserId(USER_ID, pageRequest)
     }
 
@@ -77,6 +84,8 @@ class ShippingManagementServiceTest {
         assertThrows<NotFoundException> {
             underTest.getShipping(USER_ID, SHIPPING_ID)
         }
+
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(shippingRepository).findByIdAndUserId(SHIPPING_ID, USER_ID)
     }
 
@@ -85,8 +94,9 @@ class ShippingManagementServiceTest {
         whenever(shippingRepository.findByIdAndUserId(SHIPPING_ID, USER_ID)).thenReturn(shippingFixture)
 
         val shippingDto = underTest.getShipping(USER_ID, SHIPPING_ID)
-
         assertThat(shippingDto).isEqualTo(shippingDtoFixture)
+
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(shippingRepository).findByIdAndUserId(SHIPPING_ID, USER_ID)
     }
 
@@ -97,6 +107,8 @@ class ShippingManagementServiceTest {
         assertThrows<NotFoundException> {
             underTest.deleteShipping(USER_ID, SHIPPING_ID)
         }
+
+        verify(authorizationService).checkWriteAccess(USER_ID)
         verify(shippingRepository).findByIdAndUserId(SHIPPING_ID, USER_ID)
     }
 
@@ -106,6 +118,7 @@ class ShippingManagementServiceTest {
 
         underTest.deleteShipping(USER_ID, SHIPPING_ID)
 
+        verify(authorizationService).checkWriteAccess(USER_ID)
         verify(shippingRepository).findByIdAndUserId(SHIPPING_ID, USER_ID)
         verify(shippingRepository).delete(shippingFixture)
     }

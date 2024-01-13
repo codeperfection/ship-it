@@ -8,7 +8,6 @@ import com.codeperfection.shipit.entity.Transporter
 import com.codeperfection.shipit.exception.clienterror.NotFoundException
 import com.codeperfection.shipit.repository.TransporterRepository
 import org.slf4j.LoggerFactory
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -28,14 +27,15 @@ class TransporterProvider(private val transporterRepository: TransporterReposito
 class TransporterService(
     private val transporterRepository: TransporterRepository,
     private val transporterProvider: TransporterProvider,
+    private val authorizationService: AuthorizationService,
     private val clock: Clock
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @Transactional
-    @PreAuthorize("hasAuthority('SCOPE_shipit:write')")
     fun createTransporter(userId: UUID, createTransporterDto: CreateTransporterDto): TransporterDto {
+        authorizationService.checkWriteAccess(userId)
         val now = OffsetDateTime.now(clock)
         val id = UUID.randomUUID()
         val savedTransporter = transporterRepository.save(
@@ -55,8 +55,8 @@ class TransporterService(
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('SCOPE_shipit:read')")
     fun getTransporters(userId: UUID, paginationFilterDto: PaginationFilterDto): PageDto<TransporterDto> {
+        authorizationService.checkReadAccess(userId)
         val transportersPage = transporterRepository
             .findByUserIdAndIsActiveTrue(userId, paginationFilterDto.toPageable())
 
@@ -68,13 +68,14 @@ class TransporterService(
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('SCOPE_shipit:read')")
-    fun getTransporter(userId: UUID, transporterId: UUID) = TransporterDto
-        .fromEntity(transporterProvider.getTransporter(userId, transporterId))
+    fun getTransporter(userId: UUID, transporterId: UUID): TransporterDto {
+        authorizationService.checkReadAccess(userId)
+        return TransporterDto.fromEntity(transporterProvider.getTransporter(userId, transporterId))
+    }
 
     @Transactional
-    @PreAuthorize("hasAuthority('SCOPE_shipit:write')")
     fun deleteTransporter(userId: UUID, transporterId: UUID) {
+        authorizationService.checkWriteAccess(userId)
         val transporter = transporterRepository.findByIdAndUserIdAndIsActiveTrue(transporterId, userId)
             ?: throw NotFoundException(transporterId, userId)
         transporter.isActive = false

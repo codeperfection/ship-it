@@ -3,6 +3,7 @@ package com.codeperfection.shipit.service.shipping.placer
 import com.codeperfection.shipit.fixture.*
 import com.codeperfection.shipit.repository.ProductRepository
 import com.codeperfection.shipit.repository.ShippingRepository
+import com.codeperfection.shipit.service.AuthorizationService
 import com.codeperfection.shipit.service.TransporterProvider
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -29,6 +30,9 @@ class ShippingPlacementServiceTest {
     @Mock
     private lateinit var shippingFactory: ShippingFactory
 
+    @Mock
+    private lateinit var authorizationService: AuthorizationService
+
     @InjectMocks
     private lateinit var underTest: ShippingPlacementService
 
@@ -50,6 +54,7 @@ class ShippingPlacementServiceTest {
 
         underTest.createShipping(USER_ID, createShippingDtoFixture)
 
+        verify(authorizationService).checkWriteAccess(USER_ID)
         verify(productRepository).findAllByUserIdAndIsActiveTrue(USER_ID)
         verify(transporterProvider).getTransporter(USER_ID, TRANSPORTER_ID)
         verify(shippingFactory).create(SHIPPING_NAME, productFixtures, transporterFixture)

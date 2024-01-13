@@ -32,6 +32,9 @@ class TransporterServiceTest {
     private lateinit var transporterProvider: TransporterProvider
 
     @Mock
+    private lateinit var authorizationService: AuthorizationService
+
+    @Mock
     private lateinit var clock: Clock
 
     @InjectMocks
@@ -41,7 +44,7 @@ class TransporterServiceTest {
 
     @AfterEach
     fun tearDown() {
-        verifyNoMoreInteractions(transporterRepository, transporterProvider, clock)
+        verifyNoMoreInteractions(transporterRepository, transporterProvider, authorizationService, clock)
     }
 
     @Test
@@ -54,6 +57,7 @@ class TransporterServiceTest {
 
         verify(clock).instant()
         verify(clock).zone
+        verify(authorizationService).checkWriteAccess(USER_ID)
         val transporterArgumentCaptor = argumentCaptor<Transporter>()
         verify(transporterRepository).save(transporterArgumentCaptor.capture())
         val savedTransporter = transporterArgumentCaptor.firstValue
@@ -80,6 +84,7 @@ class TransporterServiceTest {
                 elements = emptyList()
             )
         )
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(transporterRepository).findByUserIdAndIsActiveTrue(USER_ID, pageRequest)
     }
 
@@ -95,6 +100,7 @@ class TransporterServiceTest {
             PageDto(totalElements = 1, totalPages = 1, elements = listOf(transporterDtoFixture))
         )
         verify(transporterRepository).findByUserIdAndIsActiveTrue(USER_ID, pageRequest)
+        verify(authorizationService).checkReadAccess(USER_ID)
     }
 
     @Test
@@ -103,6 +109,7 @@ class TransporterServiceTest {
 
         assertThat(underTest.getTransporter(USER_ID, TRANSPORTER_ID)).isEqualTo(transporterDtoFixture)
 
+        verify(authorizationService).checkReadAccess(USER_ID)
         verify(transporterProvider).getTransporter(USER_ID, TRANSPORTER_ID)
     }
 
@@ -112,8 +119,9 @@ class TransporterServiceTest {
 
         assertThrows<NotFoundException> {
             underTest.deleteTransporter(USER_ID, TRANSPORTER_ID)
-        }
 
+        }
+        verify(authorizationService).checkWriteAccess(USER_ID)
         verify(transporterRepository).findByIdAndUserIdAndIsActiveTrue(TRANSPORTER_ID, USER_ID)
     }
 
@@ -127,6 +135,7 @@ class TransporterServiceTest {
 
         underTest.deleteTransporter(USER_ID, TRANSPORTER_ID)
 
+        verify(authorizationService).checkWriteAccess(USER_ID)
         verify(transporterRepository).findByIdAndUserIdAndIsActiveTrue(TRANSPORTER_ID, USER_ID)
         verify(transporterRepository).save(deactivatedTransporter)
     }
