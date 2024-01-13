@@ -1,7 +1,7 @@
 package com.codeperfection.shipit.service
 
-import com.codeperfection.shipit.dto.PageDto
-import com.codeperfection.shipit.dto.PaginationFilterDto
+import com.codeperfection.shipit.dto.common.PageDto
+import com.codeperfection.shipit.dto.common.PaginationFilterDto
 import com.codeperfection.shipit.dto.transporter.TransporterDto
 import com.codeperfection.shipit.entity.Transporter
 import com.codeperfection.shipit.exception.clienterror.NotFoundException
@@ -29,6 +29,9 @@ class TransporterServiceTest {
     private lateinit var transporterRepository: TransporterRepository
 
     @Mock
+    private lateinit var transporterProvider: TransporterProvider
+
+    @Mock
     private lateinit var clock: Clock
 
     @InjectMocks
@@ -38,7 +41,7 @@ class TransporterServiceTest {
 
     @AfterEach
     fun tearDown() {
-        verifyNoMoreInteractions(transporterRepository)
+        verifyNoMoreInteractions(transporterRepository, transporterProvider, clock)
     }
 
     @Test
@@ -49,6 +52,8 @@ class TransporterServiceTest {
 
         val transporterDto = underTest.createTransporter(USER_ID, createTransporterDtoFixture)
 
+        verify(clock).instant()
+        verify(clock).zone
         val transporterArgumentCaptor = argumentCaptor<Transporter>()
         verify(transporterRepository).save(transporterArgumentCaptor.capture())
         val savedTransporter = transporterArgumentCaptor.firstValue
@@ -93,23 +98,12 @@ class TransporterServiceTest {
     }
 
     @Test
-    fun `GIVEN transporter with id and user id doesn't exist, WHEN getting transporter, THEN exception is thrown`() {
-        whenever(transporterRepository.findByIdAndUserIdAndIsActiveTrue(TRANSPORTER_ID, USER_ID)).thenReturn(null)
+    fun `WHEN getting transporter, THEN expected dto is returned`() {
+        whenever(transporterProvider.getTransporter(USER_ID, TRANSPORTER_ID)).thenReturn(transporterFixture)
 
-        assertThrows<NotFoundException> {
-            underTest.getTransporter(USER_ID, TRANSPORTER_ID)
-        }
-    }
+        assertThat(underTest.getTransporter(USER_ID, TRANSPORTER_ID)).isEqualTo(transporterDtoFixture)
 
-    @Test
-    fun `GIVEN transporter with id and user id exists, WHEN getting transporter, THEN it is returned`() {
-        whenever(transporterRepository.findByIdAndUserIdAndIsActiveTrue(TRANSPORTER_ID, USER_ID)).thenReturn(
-            transporterFixture
-        )
-
-        val transporterDto = underTest.getTransporter(USER_ID, TRANSPORTER_ID)
-
-        assertThat(transporterDto).isEqualTo(transporterDtoFixture)
+        verify(transporterProvider).getTransporter(USER_ID, TRANSPORTER_ID)
     }
 
     @Test
@@ -119,6 +113,8 @@ class TransporterServiceTest {
         assertThrows<NotFoundException> {
             underTest.deleteTransporter(USER_ID, TRANSPORTER_ID)
         }
+
+        verify(transporterRepository).findByIdAndUserIdAndIsActiveTrue(TRANSPORTER_ID, USER_ID)
     }
 
     @Test
@@ -131,6 +127,7 @@ class TransporterServiceTest {
 
         underTest.deleteTransporter(USER_ID, TRANSPORTER_ID)
 
+        verify(transporterRepository).findByIdAndUserIdAndIsActiveTrue(TRANSPORTER_ID, USER_ID)
         verify(transporterRepository).save(deactivatedTransporter)
     }
 }

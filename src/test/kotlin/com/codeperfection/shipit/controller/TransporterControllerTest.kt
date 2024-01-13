@@ -1,7 +1,7 @@
 package com.codeperfection.shipit.controller
 
-import com.codeperfection.shipit.dto.PageDto
-import com.codeperfection.shipit.dto.PaginationFilterDto
+import com.codeperfection.shipit.dto.common.PageDto
+import com.codeperfection.shipit.dto.common.PaginationFilterDto
 import com.codeperfection.shipit.exception.clienterror.NotFoundException
 import com.codeperfection.shipit.exception.dto.ErrorType
 import com.codeperfection.shipit.fixture.*
@@ -11,13 +11,13 @@ import org.hamcrest.Matchers.hasSize
 import org.json.JSONArray
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
 class TransporterControllerTest : ControllerTestBase() {
@@ -27,7 +27,7 @@ class TransporterControllerTest : ControllerTestBase() {
 
     @AfterEach
     fun tearDown() {
-        Mockito.verifyNoMoreInteractions(transporterService)
+        verifyNoMoreInteractions(transporterService)
     }
 
     private val transporterJson = """
@@ -43,7 +43,7 @@ class TransporterControllerTest : ControllerTestBase() {
     @WithMockUser
     fun `GIVEN invalid request, WHEN creating transporter, THEN error response is returned`() {
         mockMvc.perform(
-            MockMvcRequestBuilders.post("/api/v1/users/$USER_ID/transporters")
+            post("/api/v1/users/$USER_ID/transporters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -62,12 +62,11 @@ class TransporterControllerTest : ControllerTestBase() {
     @Test
     @WithMockUser
     fun `GIVEN valid request, WHEN creating transporter, THEN created transporter is returned`() {
-        whenever(transporterService.createTransporter(USER_ID, createTransporterDtoFixture)).thenReturn(
-            transporterDtoFixture
-        )
+        whenever(transporterService.createTransporter(USER_ID, createTransporterDtoFixture))
+            .thenReturn(transporterDtoFixture)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.post("/api/v1/users/$USER_ID/transporters")
+            post("/api/v1/users/$USER_ID/transporters")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -80,6 +79,11 @@ class TransporterControllerTest : ControllerTestBase() {
         )
             .andExpect(status().isCreated)
             .andExpect(content().json(transporterJson))
+            .andExpect(
+                header().string(
+                    "location", "http://localhost/api/v1/users/$USER_ID/transporters/$TRANSPORTER_ID"
+                )
+            )
 
         verify(transporterService).createTransporter(USER_ID, createTransporterDtoFixture)
     }
@@ -88,7 +92,7 @@ class TransporterControllerTest : ControllerTestBase() {
     @WithMockUser
     fun `GIVEN invalid request, WHEN getting transporters page, THEN error response is returned`() {
         mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/v1/users/$USER_ID/transporters")
+            get("/api/v1/users/$USER_ID/transporters")
                 .queryParam("page", "-1")
                 .queryParam("size", "0")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -106,10 +110,9 @@ class TransporterControllerTest : ControllerTestBase() {
             .thenReturn(PageDto(totalElements = 1, totalPages = 1, elements = listOf(transporterDtoFixture)))
 
         mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/v1/users/$USER_ID/transporters")
+            get("/api/v1/users/$USER_ID/transporters")
                 .queryParam("page", "0")
                 .queryParam("size", "1")
-                .contentType(MediaType.APPLICATION_JSON)
         )
             .andExpect(status().isOk)
             .andExpect(
@@ -132,17 +135,10 @@ class TransporterControllerTest : ControllerTestBase() {
     @Test
     @WithMockUser
     fun `GIVEN request for a transporter that doesn't exist, WHEN getting the transporter, THEN not found is returned`() {
-        whenever(
-            transporterService.getTransporter(
-                USER_ID,
-                TRANSPORTER_ID
-            )
-        ).thenThrow(NotFoundException(TRANSPORTER_ID))
+        whenever(transporterService.getTransporter(USER_ID, TRANSPORTER_ID))
+            .thenThrow(NotFoundException(TRANSPORTER_ID, USER_ID))
 
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/v1/users/$USER_ID/transporters/$TRANSPORTER_ID")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+        mockMvc.perform(get("/api/v1/users/$USER_ID/transporters/$TRANSPORTER_ID"))
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("errorType", Matchers.`is`(ErrorType.NOT_FOUND.name)))
 
@@ -154,14 +150,9 @@ class TransporterControllerTest : ControllerTestBase() {
     fun `GIVEN request for a transporter that exists, WHEN getting the transporter, THEN transporter is returned`() {
         whenever(transporterService.getTransporter(USER_ID, TRANSPORTER_ID)).thenReturn(transporterDtoFixture)
 
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/v1/users/$USER_ID/transporters/$TRANSPORTER_ID")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+        mockMvc.perform(get("/api/v1/users/$USER_ID/transporters/$TRANSPORTER_ID"))
             .andExpect(status().isOk)
-            .andExpect(
-                content().json(transporterJson)
-            )
+            .andExpect(content().json(transporterJson))
 
         verify(transporterService).getTransporter(USER_ID, TRANSPORTER_ID)
     }
@@ -169,10 +160,7 @@ class TransporterControllerTest : ControllerTestBase() {
     @Test
     @WithMockUser
     fun `GIVEN valid request, WHEN deleting transporter, THEN no content is returned`() {
-        mockMvc.perform(
-            MockMvcRequestBuilders.delete("/api/v1/users/$USER_ID/transporters/$TRANSPORTER_ID")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
+        mockMvc.perform(delete("/api/v1/users/$USER_ID/transporters/$TRANSPORTER_ID"))
             .andExpect(status().isNoContent)
 
         verify(transporterService).deleteTransporter(USER_ID, TRANSPORTER_ID)

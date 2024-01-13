@@ -1,7 +1,7 @@
 package com.codeperfection.shipit.service
 
-import com.codeperfection.shipit.dto.PageDto
-import com.codeperfection.shipit.dto.PaginationFilterDto
+import com.codeperfection.shipit.dto.common.PageDto
+import com.codeperfection.shipit.dto.common.PaginationFilterDto
 import com.codeperfection.shipit.dto.product.ProductDto
 import com.codeperfection.shipit.dto.product.UpdateProductDto
 import com.codeperfection.shipit.entity.Product
@@ -35,7 +35,7 @@ class ProductServiceTest {
     @InjectMocks
     private lateinit var underTest: ProductService
 
-    private val productFixture = createProductFixture()
+    private val productFixture = createProductFixture1()
 
     @AfterEach
     fun tearDown() {
@@ -44,17 +44,17 @@ class ProductServiceTest {
 
     @Test
     fun `GIVEN create product request, WHEN creating product, THEN it is saved in db and returned`() {
-        whenever(clock.instant()).thenReturn(productFixture.createdAt.toInstant())
+        whenever(clock.instant()).thenReturn(PRODUCT_CREATION_DATE.toInstant())
         whenever(clock.zone).thenReturn(ZoneId.of("UTC"))
         whenever(productRepository.save(any<Product>())).thenReturn(productFixture)
 
-        val productDto = underTest.createProduct(USER_ID, createProductDtoFixture)
+        val productDto = underTest.createProduct(USER_ID, createProductDtoFixture1)
 
         val productArgumentCaptor = argumentCaptor<Product>()
         verify(productRepository).save(productArgumentCaptor.capture())
         val savedProduct = productArgumentCaptor.firstValue
         assertThat(savedProduct).usingRecursiveComparison().ignoringFields("id").isEqualTo(productFixture)
-        assertThat(productDto).isEqualTo(productDtoFixture)
+        assertThat(productDto).isEqualTo(productDtoFixture1)
     }
 
     @Test
@@ -83,68 +83,74 @@ class ProductServiceTest {
         val productsPage = underTest.getProducts(USER_ID, PaginationFilterDto())
 
         assertThat(productsPage).isEqualTo(
-            PageDto(totalElements = 1, totalPages = 1, elements = listOf(productDtoFixture))
+            PageDto(totalElements = 1, totalPages = 1, elements = listOf(productDtoFixture1))
         )
         verify(productRepository).findByUserIdAndIsActiveTrue(USER_ID, pageRequest)
     }
 
     @Test
     fun `GIVEN product with id and user id doesn't exist, WHEN getting product, THEN exception is thrown`() {
-        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID, USER_ID)).thenReturn(null)
+        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)).thenReturn(null)
 
         assertThrows<NotFoundException> {
-            underTest.getProduct(USER_ID, PRODUCT_ID)
+            underTest.getProduct(USER_ID, PRODUCT_ID_1)
         }
+        verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
     }
 
     @Test
     fun `GIVEN product with id and user id exists, WHEN getting product, THEN it is returned`() {
-        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID, USER_ID)).thenReturn(productFixture)
+        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)).thenReturn(productFixture)
 
-        val productDto = underTest.getProduct(USER_ID, PRODUCT_ID)
+        val productDto = underTest.getProduct(USER_ID, PRODUCT_ID_1)
 
-        assertThat(productDto).isEqualTo(productDtoFixture)
+        assertThat(productDto).isEqualTo(productDtoFixture1)
+        verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
     }
 
     @Test
     fun `GIVEN product with id and user id doesn't exist, WHEN updating product, THEN exception is thrown`() {
-        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID, USER_ID)).thenReturn(null)
+        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)).thenReturn(null)
 
         assertThrows<NotFoundException> {
-            underTest.updateProduct(USER_ID, PRODUCT_ID, UpdateProductDto(countInStock = 4))
+            underTest.updateProduct(USER_ID, PRODUCT_ID_1, UpdateProductDto(countInStock = 4))
         }
+        verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
     }
 
     @Test
     fun `GIVEN product with id and user id exists, WHEN updating product, THEN it is updated in db and returned`() {
-        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID, USER_ID)).thenReturn(productFixture)
+        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)).thenReturn(productFixture)
         val newCountInStock = 123
         val updatedProduct = productFixture.copy(countInStock = newCountInStock)
         whenever(productRepository.save(updatedProduct)).thenReturn(updatedProduct)
 
-        val productDto = underTest.updateProduct(USER_ID, PRODUCT_ID, UpdateProductDto(countInStock = newCountInStock))
+        val productDto = underTest.updateProduct(USER_ID, PRODUCT_ID_1, UpdateProductDto(countInStock = newCountInStock))
 
+        assertThat(productDto).isEqualTo(productDtoFixture1.copy(countInStock = newCountInStock))
+        verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
         verify(productRepository).save(updatedProduct)
-        assertThat(productDto).isEqualTo(productDtoFixture.copy(countInStock = newCountInStock))
     }
 
     @Test
     fun `GIVEN product with id and user id doesn't exist, WHEN deleting product, THEN exception is thrown`() {
-        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID, USER_ID)).thenReturn(null)
+        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)).thenReturn(null)
 
         assertThrows<NotFoundException> {
-            underTest.deleteProduct(USER_ID, PRODUCT_ID)
+            underTest.deleteProduct(USER_ID, PRODUCT_ID_1)
         }
+        verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
     }
 
     @Test
     fun `GIVEN product with id and user id exists, WHEN deleting product, THEN it is updated in db`() {
-        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID, USER_ID)).thenReturn(productFixture)
+        whenever(productRepository.findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)).thenReturn(productFixture)
         val deactivatedProduct = productFixture.copy(isActive = false)
         whenever(productRepository.save(deactivatedProduct)).thenReturn(deactivatedProduct)
 
-        underTest.deleteProduct(USER_ID, PRODUCT_ID)
+        underTest.deleteProduct(USER_ID, PRODUCT_ID_1)
 
+        verify(productRepository).findByIdAndUserIdAndIsActiveTrue(PRODUCT_ID_1, USER_ID)
         verify(productRepository).save(deactivatedProduct)
     }
 }

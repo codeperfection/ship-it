@@ -10,5 +10,7 @@ interface ProductRepository : JpaRepository<Product, UUID> {
 
     fun findByUserIdAndIsActiveTrue(userId: UUID, pageable: Pageable): Page<Product>
 
+    fun findAllByUserIdAndIsActiveTrue(userId: UUID): List<Product>
+
     fun findByIdAndUserIdAndIsActiveTrue(productId: UUID, userId: UUID): Product?
 }

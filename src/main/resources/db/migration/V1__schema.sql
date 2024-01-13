@@ -41,7 +41,6 @@ CREATE TABLE shipping
 
     name VARCHAR(256) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    time_zone_name VARCHAR(50) NOT NULL,
 
     transporter_id UUID NOT NULL,
 
@@ -55,7 +54,7 @@ CREATE TABLE shipped_item
 (
     id UUID,
 
-    shipped_count INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
 
     shipping_id UUID NOT NULL,
     product_id UUID NOT NULL,
