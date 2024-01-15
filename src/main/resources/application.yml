@@ -13,6 +13,5 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081
-auth-server:
-  issuer-name: https://auth.codeperfection.com
+          issuer-uri: https://auth.codeperfection.com
+          jwk-set-uri: http://localhost:8081/oauth2/jwks

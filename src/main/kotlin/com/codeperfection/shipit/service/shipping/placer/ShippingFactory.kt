@@ -23,36 +23,33 @@ class ShippingFactory(
 
     private fun calculateProductsToShip(products: List<Product>, transporter: Transporter): Map<Product, Int> {
         if (products.isEmpty()) {
-            throw ShippingImpossibleException(transporter)
+            throw ShippingImpossibleException(userId = transporter.userId, transporterId = transporter.id)
         }
-        val knapsack = knapsackPlacer.place(items(products), transporter.capacity)
+        val knapsack = knapsackPlacer.place(createKnapsackItems(products), transporter.capacity)
         if (knapsack.isEmpty()) {
-            throw ShippingImpossibleException(transporter)
+            throw ShippingImpossibleException(userId = transporter.userId, transporterId = transporter.id)
         }
-        return productToCount(knapsack, productsMap(products))
+        return productToCount(knapsack, products.associateBy { it.id })
     }
 
-    private fun items(products: List<Product>) = products.map {
-        Knapsack.Item(parentId = it.id, volume = it.volume, price = it.price)
+    private fun createKnapsackItems(products: List<Product>): Array<Knapsack.Item> = products.flatMap { product ->
+        List(size = product.countInStock) {
+            Knapsack.Item(parentId = product.id, volume = product.volume, price = product.price)
+        }
     }.toTypedArray()
 
-    private fun productsMap(products: List<Product>) = products.associateBy { it.id }
-
-    private fun productToCount(knapsack: Knapsack, productsMap: Map<UUID, Product>): Map<Product, Int> {
-        val result = mutableMapOf<Product, Int>()
-        knapsack.items.forEach {
-            val product = productsMap[it.parentId]!!
-            result[product] = result.getOrDefault(product, 0) + 1
-        }
-        return result
-    }
+    private fun productToCount(knapsack: Knapsack, productsMap: Map<UUID, Product>): Map<Product, Int> =
+        knapsack.items
+            .map { productsMap.getValue(it.parentId) }
+            .groupingBy { it }
+            .eachCount()
 
     private fun createShipping(
         name: String,
         transporter: Transporter,
         productToCount: Map<Product, Int>
     ): Shipping {
-        val emptyShipping = Shipping(
+        val shipping = Shipping(
             id = UUID.randomUUID(),
             userId = transporter.userId,
             name = name,
@@ -65,10 +62,11 @@ class ShippingFactory(
                 id = UUID.randomUUID(),
                 quantity = quantity,
                 product = product,
-                shipping = emptyShipping
+                shipping = shipping
             )
         }
+        shipping.shippedItems = shippedItems
 
-        return emptyShipping.copy(shippedItems = shippedItems)
+        return shipping
     }
 }

@@ -28,7 +28,10 @@ class ShippingPlacementService(
         authorizationService.checkWriteAccess(userId)
         val shipping = shippingFactory.create(
             name = createShippingDto.name,
-            products = productRepository.findAllByUserIdAndIsActiveTrue(userId),
+            products = productRepository.findAllByUserIdAndIsActiveTrueAndCountInStockGreaterThan(
+                userId = userId,
+                minCountInStock = 0
+            ),
             transporter = transporterProvider.getTransporter(userId, createShippingDto.transporterId)
         )
 
@@ -41,7 +44,8 @@ class ShippingPlacementService(
 
     private fun deductProductStock(productsToShip: Map<Product, Int>) {
         productsToShip.forEach { (product, quantity) ->
-            productRepository.save(product.copy(countInStock = (product.countInStock - quantity)))
+            product.countInStock -= quantity
+            productRepository.save(product)
         }
     }
 }

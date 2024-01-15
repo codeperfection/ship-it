@@ -98,9 +98,9 @@ class ShippingControllerTest : ControllerTestBase() {
 
     @Test
     @WithMockUser
-    fun `GIVEN transporter without enough space for placement, WHEN creating shipping, THEN conflic is returned`() {
+    fun `GIVEN transporter without enough space for placement, WHEN creating shipping, THEN conflict is returned`() {
         whenever(shippingPlacementService.createShipping(USER_ID, createShippingDtoFixture))
-            .thenThrow(ShippingImpossibleException(createTransporterFixture()))
+            .thenThrow(ShippingImpossibleException(userId = USER_ID, transporterId = TRANSPORTER_ID))
 
         mockMvc.perform(
             post("/api/v1/users/$USER_ID/shippings")

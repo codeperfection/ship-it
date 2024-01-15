@@ -15,5 +15,5 @@ data class Shipping(
     @JoinColumn(name = "transporter_id")
     val transporter: Transporter,
     @OneToMany(mappedBy = "shipping", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    val shippedItems: List<ShippedItem>
+    var shippedItems: List<ShippedItem>
 )

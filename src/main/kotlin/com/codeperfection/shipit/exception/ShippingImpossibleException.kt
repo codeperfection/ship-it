@@ -1,9 +1,6 @@
 package com.codeperfection.shipit.exception
 
-import com.codeperfection.shipit.entity.Transporter
+import java.util.*
 
-class ShippingImpossibleException(transporter: Transporter) : RuntimeException() {
-
-    override val message =
-        "Shipping is impossible with transporter with ID ${transporter.id} for user with ID ${transporter.userId}"
-}
+data class ShippingImpossibleException(val userId: UUID, val transporterId: UUID) :
+    RuntimeException("Shipping is impossible with transporter with ID $transporterId for user with ID $userId")

@@ -49,8 +49,8 @@ class ShippingFactoryTest {
 
         val itemsArgumentCaptor = argumentCaptor<Array<Knapsack.Item>>()
         verify(knapsackPlacer).place(itemsArgumentCaptor.capture(), eq(TRANSPORTER_CAPACITY))
-        assertThat(itemsArgumentCaptor.firstValue).hasSameElementsAs(
-            MutableList(7) { product1ItemFixture } + MutableList(9) { product2ItemFixture }
+        assertThat(itemsArgumentCaptor.firstValue).containsExactlyInAnyOrderElementsOf(
+            List(size = 7) { product1ItemFixture } + List(9) { product2ItemFixture }
         )
     }
 
@@ -61,7 +61,7 @@ class ShippingFactoryTest {
             Knapsack(
                 capacity = TRANSPORTER_CAPACITY,
                 totalPrice = 88,
-                items = MutableList(2) { product1ItemFixture } + MutableList(4) { product2ItemFixture }
+                items = List(size = 2) { product1ItemFixture } + List(size = 4) { product2ItemFixture }
             )
         )
         whenever(clock.zone).thenReturn(ZoneId.of("UTC"))
@@ -76,8 +76,8 @@ class ShippingFactoryTest {
 
         val itemsArgumentCaptor = argumentCaptor<Array<Knapsack.Item>>()
         verify(knapsackPlacer).place(itemsArgumentCaptor.capture(), eq(TRANSPORTER_CAPACITY))
-        assertThat(itemsArgumentCaptor.firstValue).hasSameElementsAs(
-            MutableList(7) { product1ItemFixture } + MutableList(9) { product2ItemFixture }
+        assertThat(itemsArgumentCaptor.firstValue).containsExactlyInAnyOrderElementsOf(
+            List(size = 7) { product1ItemFixture } + List(size = 9) { product2ItemFixture }
         )
         verify(clock).zone
         verify(clock).instant()

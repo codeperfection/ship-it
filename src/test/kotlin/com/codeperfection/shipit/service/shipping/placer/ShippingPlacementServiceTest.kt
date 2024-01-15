@@ -46,7 +46,12 @@ class ShippingPlacementServiceTest {
         val productFixture1 = createProductFixture1()
         val productFixture2 = createProductFixture2()
         val productFixtures = listOf(productFixture1, productFixture2)
-        whenever(productRepository.findAllByUserIdAndIsActiveTrue(USER_ID)).thenReturn(productFixtures)
+        whenever(
+            productRepository.findAllByUserIdAndIsActiveTrueAndCountInStockGreaterThan(
+                userId = USER_ID,
+                minCountInStock = 0
+            )
+        ).thenReturn(productFixtures)
         val transporterFixture = createTransporterFixture()
         whenever(transporterProvider.getTransporter(USER_ID, TRANSPORTER_ID)).thenReturn(transporterFixture)
         val shippingFixture = createShippingFixture()
@@ -55,7 +60,10 @@ class ShippingPlacementServiceTest {
         underTest.createShipping(USER_ID, createShippingDtoFixture)
 
         verify(authorizationService).checkWriteAccess(USER_ID)
-        verify(productRepository).findAllByUserIdAndIsActiveTrue(USER_ID)
+        verify(productRepository).findAllByUserIdAndIsActiveTrueAndCountInStockGreaterThan(
+            userId = USER_ID,
+            minCountInStock = 0
+        )
         verify(transporterProvider).getTransporter(USER_ID, TRANSPORTER_ID)
         verify(shippingFactory).create(SHIPPING_NAME, productFixtures, transporterFixture)
         verify(shippingRepository).save(shippingFixture)

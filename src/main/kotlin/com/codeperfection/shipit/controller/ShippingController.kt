@@ -60,7 +60,7 @@ class ShippingController(
                 ApiError(
                     status = HttpStatus.CONFLICT.value(),
                     errorType = ErrorType.FAILED_SHIPPING_PLACEMENT,
-                    message = e.message
+                    message = e.message!!
                 )
             )
     }

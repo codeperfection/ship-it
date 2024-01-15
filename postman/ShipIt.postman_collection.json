@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "636e2ce4-b0d2-45f2-a4b0-0073add78825",
+		"_postman_id": "651c5903-7371-4ad9-a2c3-e84cb9e78187",
 		"name": "ShipIt",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "31080886"
@@ -199,7 +199,7 @@
 					"response": []
 				},
 				{
-					"name": "Create product",
+					"name": "Create product1",
 					"event": [
 						{
 							"listen": "test",
@@ -218,7 +218,136 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Product with 8 volume and 15$\",\n    \"volume\": 8,\n    \"price\": 15,\n    \"countInStock\": 10\n}",
+							"raw": "{\n    \"name\": \"Product with volume 15 and price 17\",\n    \"volume\": 15,\n    \"price\": 17,\n    \"countInStock\": 4\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{shipItServiceUrl}}/api/v1/users/{{userId}}/products",
+							"host": [
+								"{{shipItServiceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create product2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"productId\", jsonData.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Product with volume 21 and price 33\",\n    \"volume\": 21,\n    \"price\": 33,\n    \"countInStock\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{shipItServiceUrl}}/api/v1/users/{{userId}}/products",
+							"host": [
+								"{{shipItServiceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create product3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"productId\", jsonData.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Product with volume 30 and price 45\",\n    \"volume\": 30,\n    \"price\": 45,\n    \"countInStock\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{shipItServiceUrl}}/api/v1/users/{{userId}}/products",
+							"host": [
+								"{{shipItServiceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create product4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"productId\", jsonData.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Product with volume 1 and price 1\",\n    \"volume\": 1,\n    \"price\": 1,\n    \"countInStock\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -612,7 +741,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Transporter with 150 capacity\",\n    \"capacity\": 150\n}",
+							"raw": "{\n    \"name\": \"Transporter with 100 capacity\",\n    \"capacity\": 100\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -845,6 +974,196 @@
 								"{{userId}}",
 								"transporters",
 								"{{transporterId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Shipping",
+			"item": [
+				{
+					"name": "Create shipping error case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"\",\n    \"transporterId\": \"{{transporterId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{shipItServiceUrl}}/api/v1/users/{{userId}}/shippings",
+							"host": [
+								"{{shipItServiceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"shippings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create shipping",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"shippingId\", jsonData.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"My Shipping1\",\n    \"transporterId\": \"{{transporterId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{shipItServiceUrl}}/api/v1/users/{{userId}}/shippings",
+							"host": [
+								"{{shipItServiceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"shippings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get shippings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{shipItServiceUrl}}/api/v1/users/{{userId}}/shippings",
+							"host": [
+								"{{shipItServiceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"shippings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get shipping by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{shipItServiceUrl}}/api/v1/users/{{userId}}/shippings/{{shippingId}}",
+							"host": [
+								"{{shipItServiceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"shippings",
+								"{{shippingId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete shipping",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{shipItServiceUrl}}/api/v1/users/{{userId}}/shippings/{{shippingId}}",
+							"host": [
+								"{{shipItServiceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"shippings",
+								"{{shippingId}}"
 							]
 						}
 					},
